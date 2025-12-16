@@ -1,8 +1,8 @@
 package com.propertypilot.service;
 
-import com.propertypilot.model.Appartamenti;
+import com.propertypilot.model.Appartamento;
 
 public interface AppartamentiService {
 
-    public Appartamenti getAppartamentiById(int id);
+    public Appartamento getAppartamentiById(int id);
 }

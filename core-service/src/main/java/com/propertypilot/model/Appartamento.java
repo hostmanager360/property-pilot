@@ -12,16 +12,17 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity(name= "appartamenti")
-public class Appartamenti {
+@Entity
+@Table(name = "appartamenti")
+public class Appartamento {
 
     @Id
-    @Column(name="id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    int id;
+    private Integer id;
 
-    @Column(name = "tenant_key")
-    String tenantKey;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tenant_key", nullable = false)
+    private Tenant tenant;
 
     @Column(name = "nome_appartamento")
     String nomeAppartamento;

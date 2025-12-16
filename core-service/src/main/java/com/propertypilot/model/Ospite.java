@@ -13,15 +13,15 @@ import java.util.Date;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity(name= "opsiti")
-public class Opsiti {
+@Entity(name= "ospiti")
+public class Ospite {
     @Id
-    @Column(name="id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    int id;
+    private Integer id;
 
-    @Column(name = "prenotazione_key")
-    String prenotazioneKey;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id")
+    private Prenotazione prenotazione;
 
     @Column(name = "tenant_key")
     String tenantKey;

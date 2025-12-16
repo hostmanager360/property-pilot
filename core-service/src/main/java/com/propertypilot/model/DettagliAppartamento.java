@@ -13,22 +13,25 @@ import java.util.Date;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity(name= "dettagli_appartamenti")
-public class DettagliAppartamenti {
+@Entity
+@Table(name = "dettagli_appartamenti")
+public class DettagliAppartamento {
 
     @Id
-    @Column(name="id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    int id;
+    private Integer id;
 
-    @Column(name = "appartamento_id")
-    int appartamentoId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "appartamento_id", nullable = false)
+    private Appartamento appartamento;
 
-    @Column(name = "tenant_key")
-    String tenantKey;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tenant_key", nullable = false)
+    private Tenant tenant;
 
-    @Column(name = "tipo_gestione_id")
-    int tipoGestioneId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tipo_gestione_id")
+    private TipoGestione tipoGestione;
 
     @Column(name = "data_inizio_attivita")
     Date dataInizioAttivita;

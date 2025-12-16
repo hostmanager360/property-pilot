@@ -1,6 +1,6 @@
 package com.propertypilot.repository;
 
-import com.propertypilot.model.Appartamenti;
+import com.propertypilot.model.Appartamento;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,7 +14,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 @Repository
-public class AppartamentiRepository implements JpaRepository<Appartamenti, Integer> {
+public class AppartamentiRepository implements JpaRepository<Appartamento, Integer> {
 
     @Override
     public void flush() {
@@ -22,17 +22,17 @@ public class AppartamentiRepository implements JpaRepository<Appartamenti, Integ
     }
 
     @Override
-    public <S extends Appartamenti> S saveAndFlush(S entity) {
+    public <S extends Appartamento> S saveAndFlush(S entity) {
         return null;
     }
 
     @Override
-    public <S extends Appartamenti> List<S> saveAllAndFlush(Iterable<S> entities) {
+    public <S extends Appartamento> List<S> saveAllAndFlush(Iterable<S> entities) {
         return List.of();
     }
 
     @Override
-    public void deleteAllInBatch(Iterable<Appartamenti> entities) {
+    public void deleteAllInBatch(Iterable<Appartamento> entities) {
 
     }
 
@@ -47,67 +47,67 @@ public class AppartamentiRepository implements JpaRepository<Appartamenti, Integ
     }
 
     @Override
-    public Appartamenti getOne(Integer integer) {
+    public Appartamento getOne(Integer integer) {
         return null;
     }
 
     @Override
-    public Appartamenti getById(Integer integer) {
+    public Appartamento getById(Integer integer) {
         return null;
     }
 
     @Override
-    public Appartamenti getReferenceById(Integer integer) {
+    public Appartamento getReferenceById(Integer integer) {
         return null;
     }
 
     @Override
-    public <S extends Appartamenti> Optional<S> findOne(Example<S> example) {
+    public <S extends Appartamento> Optional<S> findOne(Example<S> example) {
         return Optional.empty();
     }
 
     @Override
-    public <S extends Appartamenti> List<S> findAll(Example<S> example) {
+    public <S extends Appartamento> List<S> findAll(Example<S> example) {
         return List.of();
     }
 
     @Override
-    public <S extends Appartamenti> List<S> findAll(Example<S> example, Sort sort) {
+    public <S extends Appartamento> List<S> findAll(Example<S> example, Sort sort) {
         return List.of();
     }
 
     @Override
-    public <S extends Appartamenti> Page<S> findAll(Example<S> example, Pageable pageable) {
+    public <S extends Appartamento> Page<S> findAll(Example<S> example, Pageable pageable) {
         return null;
     }
 
     @Override
-    public <S extends Appartamenti> long count(Example<S> example) {
+    public <S extends Appartamento> long count(Example<S> example) {
         return 0;
     }
 
     @Override
-    public <S extends Appartamenti> boolean exists(Example<S> example) {
+    public <S extends Appartamento> boolean exists(Example<S> example) {
         return false;
     }
 
     @Override
-    public <S extends Appartamenti, R> R findBy(Example<S> example, Function<FluentQuery.FetchableFluentQuery<S>, R> queryFunction) {
+    public <S extends Appartamento, R> R findBy(Example<S> example, Function<FluentQuery.FetchableFluentQuery<S>, R> queryFunction) {
         return null;
     }
 
     @Override
-    public <S extends Appartamenti> S save(S entity) {
+    public <S extends Appartamento> S save(S entity) {
         return null;
     }
 
     @Override
-    public <S extends Appartamenti> List<S> saveAll(Iterable<S> entities) {
+    public <S extends Appartamento> List<S> saveAll(Iterable<S> entities) {
         return List.of();
     }
 
     @Override
-    public Optional<Appartamenti> findById(Integer integer) {
+    public Optional<Appartamento> findById(Integer integer) {
         return Optional.empty();
     }
 
@@ -117,12 +117,12 @@ public class AppartamentiRepository implements JpaRepository<Appartamenti, Integ
     }
 
     @Override
-    public List<Appartamenti> findAll() {
+    public List<Appartamento> findAll() {
         return List.of();
     }
 
     @Override
-    public List<Appartamenti> findAllById(Iterable<Integer> integers) {
+    public List<Appartamento> findAllById(Iterable<Integer> integers) {
         return List.of();
     }
 
@@ -137,7 +137,7 @@ public class AppartamentiRepository implements JpaRepository<Appartamenti, Integ
     }
 
     @Override
-    public void delete(Appartamenti entity) {
+    public void delete(Appartamento entity) {
 
     }
 
@@ -147,7 +147,7 @@ public class AppartamentiRepository implements JpaRepository<Appartamenti, Integ
     }
 
     @Override
-    public void deleteAll(Iterable<? extends Appartamenti> entities) {
+    public void deleteAll(Iterable<? extends Appartamento> entities) {
 
     }
 
@@ -157,12 +157,12 @@ public class AppartamentiRepository implements JpaRepository<Appartamenti, Integ
     }
 
     @Override
-    public List<Appartamenti> findAll(Sort sort) {
+    public List<Appartamento> findAll(Sort sort) {
         return List.of();
     }
 
     @Override
-    public Page<Appartamenti> findAll(Pageable pageable) {
+    public Page<Appartamento> findAll(Pageable pageable) {
         return null;
     }
 }
