@@ -15,37 +15,34 @@ import java.util.List;
 @Component
 public class JwtPresenceFilter implements GlobalFilter, Ordered {
 
-    // Lista di percorsi che richiedono almeno il token
-    private static final List<String> PROTECTED_PATHS = Arrays.asList(
-            "/api/core/**"   // tutti gli endpoint core richiedono Authorization header
+    private static final List<String> PROTECTED_PREFIXES = List.of(
+            "/api/core/private"
+    );
+
+    private static final List<String> PUBLIC_PREFIXES = List.of(
+            "/api/core/public/" , "/api/auth"
     );
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
 
-        String path = exchange.getRequest().getPath().toString();
+        String path = exchange.getRequest().getURI().getPath();
 
-        // Controlla se il percorso richiede token
-        boolean requiresToken = PROTECTED_PATHS.stream().anyMatch(path::startsWith);
+        boolean isProtected = PROTECTED_PREFIXES.stream().anyMatch(p -> path.startsWith(p));
+        boolean isPublic = PUBLIC_PREFIXES.stream().anyMatch(p -> path.startsWith(p));
 
-        if (requiresToken) {
-            String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        if (isProtected && !isPublic) {
+            String authHeader = exchange.getRequest()
+                    .getHeaders()
+                    .getFirst(HttpHeaders.AUTHORIZATION);
+
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                 return exchange.getResponse().setComplete();
             }
         }
 
-        // Inoltra sempre l'header Authorization ai microservizi downstream
-        return chain.filter(exchange.mutate()
-                .request(r -> {
-                    String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-                    if (authHeader != null) {
-                        r.header(HttpHeaders.AUTHORIZATION, authHeader);
-                    }
-                })
-                .build()
-        );
+        return chain.filter(exchange);
     }
 
     @Override

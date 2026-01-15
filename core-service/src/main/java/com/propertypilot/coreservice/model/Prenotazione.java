@@ -45,7 +45,7 @@ public class Prenotazione {
     @Column(name = "costo")
     private BigDecimal costo;
 
-    @Column(name = "nomero_ospiti")
+    @Column(name = "numero_ospiti")
     private Integer numeroOspiti;
 
     @Column(name = "data_check_in_online")
@@ -54,7 +54,7 @@ public class Prenotazione {
     @Column(name = "costo_city_tax")
     private BigDecimal costoCityTax;
 
-    @Column(name = "status_alloggi_web")
+    @Column(name = "status_alloggiati_web")
     private String statusAlloggiatiWeb;
 
     @Column(name = "costo_cedolare_secca")

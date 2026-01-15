@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -20,7 +21,7 @@ public class Ospite {
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id")
+    @JoinColumn(name = "id_prenotazione")
     private Prenotazione prenotazione;
 
     @Column(name = "tenant_key")
@@ -36,7 +37,7 @@ public class Ospite {
     String cognome;
 
     @Column(name = "data_nascita")
-    Date dataNascita;
+    LocalDate dataNascita;
 
     @Column(name = "cittadinanza")
     String cittadinanza;

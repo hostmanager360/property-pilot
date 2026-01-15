@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -34,29 +36,29 @@ public class DettagliAppartamento {
     private TipoGestione tipoGestione;
 
     @Column(name = "data_inizio_attivita")
-    Date dataInizioAttivita;
+    LocalDate dataInizioAttivita;
 
     @Column(name = "costo_pulizie")
-    double costoPulizie;
+    BigDecimal  costoPulizie;
 
     @Column(name = "costo_utenze_giornaliere")
-    double costoUtenzeGiornaliere;
+    BigDecimal costoUtenzeGiornaliere;
 
     @Column(name = "costo_tassa_soggiorno_per_ospite")
-    double costoTassaSoggiornoPerOspite;
+    BigDecimal  costoTassaSoggiornoPerOspite;
 
     @Column(name = "tassa_soggiorno_automatica")
-    boolean tassaSoggiornoAutomatica;
+    boolean  tassaSoggiornoAutomatica;
 
     @Column(name = "cedolare_secca")
-    boolean cedolareSecca;
+    boolean  cedolareSecca;
 
     @Column(name = "percentuale_commissione_pm")
-    double percentualeCommissionePm;
+    BigDecimal  percentualeCommissionePm;
 
     @Column(name = "created_at")
     LocalDateTime createdAt;
 
-    @Column(name = "update_at")
+    @Column(name = "updated_at")
     LocalDateTime updateAt;
 }

@@ -2,6 +2,7 @@ package com.propertypilot.coreservice.service;
 
 import com.propertypilot.coreservice.exceptionCustom.PrenotazioneException;
 import com.propertypilot.coreservice.model.Prenotazione;
+import com.propertypilot.coreservice.model.Tenant;
 import com.propertypilot.coreservice.repository.PrenotazioneRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,7 +22,7 @@ public class PrenotazioneServiceImpl implements PrenotazioneService {
     }
 
     @Override
-    public List<Prenotazione> findAllByTenant(String tenant) {
+    public List<Prenotazione> findAllByTenant(Tenant tenant) {
         List<Prenotazione> prenotazioni =
                 prenotazioneRepository.findByTenant(tenant);
 

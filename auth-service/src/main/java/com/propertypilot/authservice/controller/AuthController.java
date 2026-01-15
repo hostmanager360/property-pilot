@@ -19,6 +19,8 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
+        System.out.println("Login chiamato con username: " + request.getEmail());
+
         return ResponseEntity.ok(authService.login(request));
     }
 }

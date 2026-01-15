@@ -31,7 +31,7 @@ public class Appartamento {
     String via;
 
     @Column(name = "civico")
-    int civico;
+    String civico;
 
     @Column(name = "citta")
     String citta;
@@ -40,7 +40,7 @@ public class Appartamento {
     String stato;
 
     @Column(name = "cup")
-    int cup;
+    String cup;
 
     @Column(name = "cin")
     String cin;
@@ -51,6 +51,6 @@ public class Appartamento {
     @Column(name = "created_at")
     LocalDateTime createdAt;
 
-    @Column(name = "update_at")
+    @Column(name = "updated_at")
     LocalDateTime updateAt;
 }

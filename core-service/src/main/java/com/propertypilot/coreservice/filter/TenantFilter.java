@@ -26,7 +26,7 @@ public class TenantFilter extends OncePerRequestFilter {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         if (auth instanceof JwtAuthenticationToken jwtAuth) {
-            String tenant = jwtAuth.getToken().getClaim("tenantKey");
+            String tenant = jwtAuth.getToken().getClaimAsString("tenantKey");
             TenantContext.setTenant(tenant);
         }
 
