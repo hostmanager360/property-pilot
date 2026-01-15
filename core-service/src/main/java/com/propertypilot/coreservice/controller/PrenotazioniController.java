@@ -39,7 +39,7 @@ public class PrenotazioniController {
             Tenant tenant = tenantService.findByKey(keyTenant)
                     .orElseThrow(() -> new EntityNotFoundException(
                             "Tenant non trovato per key: " + keyTenant));
-
+//prova
             List<Prenotazione> prenotazioni = prenotazioneService.findAllByTenant(tenant);
             return ResponseEntity.ok(
                     ResponseHandler.success(prenotazioni, "Lista prenotazioni recuperata correttamente")
