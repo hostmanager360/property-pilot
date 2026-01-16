@@ -5,7 +5,9 @@ import com.propertypilot.coreservice.context.TenantContext;
 import com.propertypilot.coreservice.dto.PrevisioneGuadagnoDto;
 import com.propertypilot.coreservice.dto.ResponseHandler;
 import com.propertypilot.coreservice.exceptionCustom.PrenotazioneException;
+import com.propertypilot.coreservice.exceptionCustom.PrevisioneGuadagnoException;
 import com.propertypilot.coreservice.model.Prenotazione;
+import com.propertypilot.coreservice.model.PrevisioneGuadagno;
 import com.propertypilot.coreservice.model.Tenant;
 import com.propertypilot.coreservice.service.PrevisioneGadagnoService;
 import jakarta.persistence.EntityNotFoundException;
@@ -26,11 +28,11 @@ public class previsioneGuadagnoController {
     public ResponseEntity<ResponseHandler> calcoloPrevisioneGudagno(@RequestBody PrevisioneGuadagnoDto dto) {
         ResponseHandler responseHandler = new ResponseHandler();
         try {
-            PrevisioneGuadagnoDto previsioneGuadagnoDto = previsioneGadagnoService.calcoloCostiPrevisioneGadagno(dto);
+            PrevisioneGuadagno previsioneGuadagno = previsioneGadagnoService.calcoloCostiPrevisioneGadagno(dto);
             return ResponseEntity.ok(
-                    ResponseHandler.success(previsioneGuadagnoDto, "Lista prenotazioni recuperata correttamente")
+                    ResponseHandler.success(previsioneGuadagno, "Previsione salvata correttamente")
             );
-        } catch (PrenotazioneException e) {
+        } catch (PrevisioneGuadagnoException e) {
             return ResponseEntity.ok(
                     ResponseHandler.error(e.getCode(), e.getMessage())
             );

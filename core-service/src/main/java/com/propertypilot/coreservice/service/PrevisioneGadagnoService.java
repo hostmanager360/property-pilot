@@ -6,5 +6,5 @@ import com.propertypilot.coreservice.model.PrevisioneGuadagno;
 import java.util.List;
 
 public interface PrevisioneGadagnoService {
-    public PrevisioneGuadagnoDto calcoloCostiPrevisioneGadagno(PrevisioneGuadagnoDto dto);
+    public PrevisioneGuadagno calcoloCostiPrevisioneGadagno(PrevisioneGuadagnoDto dto);
 }
