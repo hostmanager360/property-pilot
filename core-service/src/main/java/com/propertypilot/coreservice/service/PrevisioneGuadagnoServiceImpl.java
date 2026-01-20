@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
-import java.beans.Transient;
 import java.math.BigDecimal;
 
 @Service
@@ -40,7 +39,7 @@ public class PrevisioneGuadagnoServiceImpl implements PrevisioneGadagnoService{
             dto.setTotaleLordoPernottamenti(totaleLordoPernottamenti);
 
             totaleCostoTassa = calcoloCostotasse(dto.getCostoTasse(), totaleLordoPernottamenti);
-            dto.setTotaleCostoTasse(totaleCostoTassa);
+            dto.setTotaleCostoTassa(totaleCostoTassa);
 
             totaleCostoPiattaforma = calcoloCostoPiattaforma(dto.getCostoPiattaforma(), totaleLordoPernottamenti);
             dto.setTotaleCostoPiattaforma(totaleCostoPiattaforma);

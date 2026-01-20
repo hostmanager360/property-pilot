@@ -35,7 +35,7 @@ public class PrevisioneGuadagnoDto {
     private BigDecimal commissioneHost;    // es: 15%
 
     // Valori calcolati nel service
-    private BigDecimal totaleCostoTasse = BigDecimal.ZERO;
+    private BigDecimal totaleCostoTassa = BigDecimal.ZERO;
     private BigDecimal totaleCostoPiattaforma = BigDecimal.ZERO;
     private BigDecimal totaleLordoPernottamenti = BigDecimal.ZERO;
     private BigDecimal totaleLordoGestione = BigDecimal.ZERO;

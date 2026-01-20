@@ -2,7 +2,6 @@ package com.propertypilot.coreservice.util;
 
 import com.propertypilot.coreservice.dto.PrevisioneGuadagnoDto;
 import com.propertypilot.coreservice.model.PrevisioneGuadagno;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -49,9 +48,14 @@ public class MappingEntity {
 
         // Totali calcolati
         entity.setTotaleLordoPernottamenti(safeBigDecimal(dto.getTotaleLordoPernottamenti()));
-        entity.setTotaleCommissioneGestione(safeBigDecimal(dto.getTotaleLordoGestione())); // attenzione mapping corretto
+        entity.setTotaleLordoGestione(safeBigDecimal(dto.getTotaleLordoGestione())); // attenzione mapping corretto
         entity.setTotaleCostoPulizia(safeBigDecimal(dto.getTotaleCostoPulizie()));
         entity.setTotaleNettoProprietario(safeBigDecimal(dto.getTotaleNettoProprietaria()));
+        entity.setTotaleLordoGestione(safeBigDecimal(dto.getTotaleLordoGestione()));
+        entity.setTotaleCommissioneCoHost(safeBigDecimal(dto.getTotaleCommissioneCoHost()));
+        entity.setTotaleCommissioneHost(safeBigDecimal(dto.getTotaleCommissioneHost()));
+        entity.setTotaleCostoTassa(safeBigDecimal(dto.getTotaleCostoTassa()));
+        entity.setTotaleCostoPiattaforma(safeBigDecimal(dto.getTotaleCostoPiattaforma()));
 
         return entity;
     }

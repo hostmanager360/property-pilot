@@ -76,8 +76,8 @@ public class PrevisioneGuadagno {
     @Column(name = "totale_lordo_pernottamenti")
     BigDecimal totaleLordoPernottamenti;
 
-    @Column(name = "totale_lordo_gestionne")
-    BigDecimal totaleLordoGestionne;
+    @Column(name = "totale_lordo_gestione")
+    BigDecimal totaleLordoGestione;
 
     @Column(name = "totale_costo_pulizia")
     BigDecimal totaleCostoPulizia;
@@ -91,10 +91,10 @@ public class PrevisioneGuadagno {
     @Column(name = "totale_costo_piattaforma")
     BigDecimal totaleCostoPiattaforma;
 
-    @Column(name = "totale_commisione_host")
-    BigDecimal totaleCommisioneHost;
+    @Column(name = "totale_commissione_host")
+    BigDecimal totaleCommissioneHost;
 
-    @Column(name = "totale_commisione_co_host")
-    BigDecimal totaleCommisioneCoHost;
+    @Column(name = "totale_commissione_co_host")
+    BigDecimal totaleCommissioneCoHost;
 
 }
