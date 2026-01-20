@@ -14,6 +14,16 @@ public class UserDto {
     String email;
     String password;
     String role;
+    String confermaPassword;
+
+    public String getConfermaPassword() {
+        return confermaPassword;
+    }
+
+    public void setConfermaPassword(String confermaPassword) {
+        this.confermaPassword = confermaPassword;
+    }
+
     public String getEmail() {
         return email;
     }
