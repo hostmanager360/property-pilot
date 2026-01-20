@@ -85,4 +85,16 @@ public class PrevisioneGuadagno {
     @Column(name = "totale_netto_proprietario")
     BigDecimal totaleNettoProprietario;
 
+    @Column(name = "totale_costo_tassa")
+    BigDecimal totaleCostoTassa;
+
+    @Column(name = "totale_costo_piattaforma")
+    BigDecimal totaleCostoPiattaforma;
+
+    @Column(name = "totale_commisione_host")
+    BigDecimal totaleCommisioneHost;
+
+    @Column(name = "totale_commisione_co_host")
+    BigDecimal totaleCommisioneCoHost;
+
 }
