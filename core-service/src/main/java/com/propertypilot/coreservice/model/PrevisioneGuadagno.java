@@ -76,8 +76,8 @@ public class PrevisioneGuadagno {
     @Column(name = "totale_lordo_pernottamenti")
     BigDecimal totaleLordoPernottamenti;
 
-    @Column(name = "totale_commissione_gestione")
-    BigDecimal totaleCommissioneGestione;
+    @Column(name = "totale_lordo_gestionne")
+    BigDecimal totaleLordoGestionne;
 
     @Column(name = "totale_costo_pulizia")
     BigDecimal totaleCostoPulizia;
