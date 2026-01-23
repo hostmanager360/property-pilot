@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Benvenuto su PropertyPilot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            background: #ffffff;
+            padding: 24px;
+            border-radius: 10px;
+            max-width: 520px;
+            margin: auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .title {
+            font-size: 22px;
+            letter-spacing: 1px;
+            font-weight: bold;
+            color: #222;
+        }
+        .subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-top: 6px;
+        }
+        .content {
+            font-size: 14px;
+            color: #333;
+            line-height: 1.6;
+            margin-top: 16px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 22px;
+            background: #007bff;
+            color: #ffffff !important;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-top: 22px;
+            font-size: 14px;
+        }
+        .btn:hover {
+            background: #0064d1;
+        }
+        .footer {
+            margin-top: 28px;
+            font-size: 11px;
+            color: #999;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="title">BENVENUTO SU PROPERTYPILOT</div>
+        <div class="subtitle">Completa la registrazione del tuo account in pochi secondi</div>
+    </div>
+
+    <div class="content">
+        <p th:text="'Ciao ' + ${name} + ','">Ciao Nome,</p>
+
+        <p>
+            per attivare il tuo account e iniziare a usare PropertyPilot,
+            clicca sul pulsante qui sotto. Dopo la conferma, vedrai un messaggio
+            che indica che il tuo utente è stato attivato correttamente.
+        </p>
+
+        <p style="text-align: center;">
+            <a class="btn"
+               th:href="${verificationLink}">
+                Attiva il tuo account
+            </a>
+        </p>
+
+        <p>
+            Se non hai richiesto tu la creazione di questo account, puoi ignorare
+            tranquillamente questa email.
+        </p>
+    </div>
+
+    <div class="footer">
+        PropertyPilot · Gestione smart dei tuoi immobili
+    </div>
+</div>
+</body>
+</html>
