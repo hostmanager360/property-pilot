@@ -1,9 +1,14 @@
 package com.propertypilot.registration_service.service;
 
+import com.propertypilot.registration_service.exception.EmailAlreadyExistsException;
+import com.propertypilot.registration_service.exception.InvalidEmailException;
+import com.propertypilot.registration_service.exception.PasswordMismatchException;
 import com.propertypilot.registration_service.model.User;
+import com.propertypilot.registration_service.model.UserDto;
 import com.propertypilot.registration_service.model.VerificationToken;
 import com.propertypilot.registration_service.repository.UserRepository;
 import com.propertypilot.registration_service.repository.VerificationTokenRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,19 +28,25 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private VerificationTokenRepository verificationTokenRepository;
 
-    public User registerUser(String email, String rawPassword, String role) {
+    @Transactional
+    public User registerUser(UserDto dto) {
 
-        if (userRepository.findByEmail(email).isPresent()) {
-            throw new RuntimeException("Email già registrata");
-        } else  if (!isValidEmail(email)) {
-            throw new IllegalArgumentException("Email non valida");
+        // 1. Validazione password
+        validatePassword(dto);
+
+        if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new EmailAlreadyExistsException("Email già registrata");
+        }
+        if (!isValidEmail(dto.getEmail())) {
+            throw new InvalidEmailException("Email non valida");
         }
 
 
+
         User user = new User();
-        user.setEmail(email);
-        user.setPassword(passwordEncoder.encode(rawPassword));
-        user.setRole(role);
+        user.setEmail(dto.getEmail());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setRole(dto.getRole());
         user.setEnabled(false); // ora parte disabilitato
         userRepository.save(user);
 
@@ -51,22 +62,21 @@ public class UserServiceImpl implements UserService {
 
         // 2. Invia email
         String link = "http://localhost:8082/api/users/verify?token=" + token;
-        String name = "Simone";
+        String name = user.getEmail();
         sendEmailService.sendVerificationEmail(user.getEmail(),name, link);
 
         return user;
     }
 
-    public void enableUser(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Utente non trovato"));
-        user.setEnabled(true);
-        userRepository.save(user);
-    }
-
     public boolean isValidEmail(String email) {
         String regex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
         return email != null && email.matches(regex);
+    }
+
+    private void validatePassword(UserDto dto) {
+        if (!dto.getPassword().equals(dto.getConfermaPassword())) {
+            throw new PasswordMismatchException("Le password non coincidono");
+        }
     }
 
 }

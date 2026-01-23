@@ -1,5 +1,6 @@
 package com.propertypilot.registration_service.service;
 
+import com.propertypilot.registration_service.exception.EmailSendException;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
@@ -44,14 +45,9 @@ public class SendMailServiceImpl implements SenEmailService{
 
             mailSender.send(mimeMessage);
 
-        } catch (MailException e) {
-            log.error("Errore durante l'invio email: {}", e.getMessage());
-            throw new RuntimeException("Impossibile inviare email");
-        } catch (MessagingException e) {
-            throw new RuntimeException(e);
+        } catch (MailException | MessagingException e) {
+            throw new EmailSendException("Errore durante l'invio dell'email");
         }
-
-
     }
 
 }

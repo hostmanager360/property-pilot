@@ -25,7 +25,7 @@ public class JwtPresenceFilter implements GlobalFilter, Ordered {
     );
 
     private static final List<String> PUBLIC_PREFIXES = List.of(
-            "/api/core/public/" , "/api/auth"
+            "/api/core/public/" , "/api/auth", "/api/users/register"
     );
 
     @Override

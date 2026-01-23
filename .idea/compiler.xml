@@ -9,6 +9,15 @@
         <outputRelativeToContentRoot value="true" />
         <module name="apigateway-service" />
       </profile>
+      <profile name="Annotation profile for registration-service" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
+        </processorPath>
+        <module name="registration-service" />
+      </profile>
       <profile name="Annotation profile for core-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
@@ -18,15 +27,6 @@
         </processorPath>
         <module name="core-service" />
         <module name="auth-service" />
-      </profile>
-      <profile name="Annotation profile for registration-service" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
-        </processorPath>
-        <module name="registration-service" />
       </profile>
     </annotationProcessing>
   </component>
