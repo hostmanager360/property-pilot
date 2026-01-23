@@ -1,0 +1,41 @@
+package com.propertypilot.coreservice.model;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
+@Entity
+@Table(name = "users")
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, unique = true, length = 150)
+    private String email;
+
+    @Column(name = "password_hash", nullable = false)
+    private String password;
+
+    @Column(nullable = false)
+    private boolean enabled = false;
+
+    @Column(nullable = false, length = 50)
+    private String role; // OWNER, ADMIN, USER
+
+    @Column(name = "tenant_key", length = 50)
+    private String tenantKey;
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+}

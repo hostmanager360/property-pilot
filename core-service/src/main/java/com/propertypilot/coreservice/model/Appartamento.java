@@ -20,10 +20,6 @@ public class Appartamento {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tenant_key", nullable = false)
-    private Tenant tenant;
-
     @Column(name = "nome_appartamento")
     String nomeAppartamento;
 

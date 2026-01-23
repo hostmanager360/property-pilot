@@ -1,5 +1,6 @@
 package com.propertypilot.coreservice.service;
 
+import com.propertypilot.coreservice.dto.CreateTenantDTO;
 import com.propertypilot.coreservice.model.Tenant;
 
 import java.util.List;
@@ -13,5 +14,7 @@ public interface TenantService {
     Tenant save(Tenant tenant);
 
     void deleteByKey(String keyTenant);
+
+    public Tenant createTenant(CreateTenantDTO dto);
 }
 
