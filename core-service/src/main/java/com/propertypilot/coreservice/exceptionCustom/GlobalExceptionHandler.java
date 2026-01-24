@@ -59,4 +59,5 @@ public class GlobalExceptionHandler {
                 Map.of("error", ex.getMessage())
         );
     }
+
 }

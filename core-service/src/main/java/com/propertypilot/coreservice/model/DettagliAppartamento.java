@@ -28,10 +28,6 @@ public class DettagliAppartamento {
     private Appartamento appartamento;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tenant_key", nullable = false)
-    private Tenant tenant;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tipo_gestione_id")
     private TipoGestione tipoGestione;
 
@@ -55,6 +51,12 @@ public class DettagliAppartamento {
 
     @Column(name = "percentuale_commissione_pm")
     BigDecimal  percentualeCommissionePm;
+
+    @Column(name = "percentuale_commissione_host")
+    private BigDecimal percentualeCommissioneHost;
+
+    @Column(name = "percentuale_commissione_totale")
+    private BigDecimal percentualeCommissioneTotale;
 
     @Column(name = "created_at")
     LocalDateTime createdAt;
