@@ -1,5 +1,6 @@
 package com.propertypilot.coreservice.controller;
 
+import com.propertypilot.coreservice.dto.AppartamentoDettagliDTO;
 import com.propertypilot.coreservice.dto.CreateAppartamentoDTO;
 import com.propertypilot.coreservice.dto.ResponseHandler;
 import com.propertypilot.coreservice.model.Appartamento;
@@ -21,10 +22,10 @@ public class AppartamentoController {
     AppartamentoService appartamentoService;
 
     @PostMapping("/create")
-    public ResponseEntity<ResponseHandler<Appartamento>> create(@RequestBody CreateAppartamentoDTO dto) {
+    public ResponseEntity<ResponseHandler<AppartamentoDettagliDTO>> create(@RequestBody AppartamentoDettagliDTO dto) {
 
         try {
-            Appartamento created = appartamentoService.createAppartamento(dto);
+            AppartamentoDettagliDTO created = appartamentoService.createAppartamento(dto);
 
             return ResponseEntity.ok(
                     ResponseHandler.success(

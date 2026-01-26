@@ -20,5 +20,12 @@ public interface UserApartmentAccessRepository extends JpaRepository<UserApartme
 
     @Query("SELECT uaa.apartment.id FROM UserApartmentAccess uaa WHERE uaa.user.id = :userId")
     List<Integer> findApartmentIdsByUserId(Long userId);
+    @Query("""
+    SELECT uaa
+    FROM UserApartmentAccess uaa
+    JOIN FETCH uaa.apartment a
+    WHERE uaa.user.id = :userId
+""")
+    List<UserApartmentAccess> findByUserIdWithApartment(Long userId);
 
 }

@@ -171,7 +171,7 @@ public class UserApartmentAccessServiceImpl implements UserApartmentAccessServic
         String tenantKey = TenantContext.getTenant();
         validateUserTenant(userId, tenantKey);
 
-        List<UserApartmentAccess> accessList = accessRepository.findByUserId(userId);
+        List<UserApartmentAccess> accessList = accessRepository.findByUserIdWithApartment(userId);
 
         List<AppartamentoDettagliDTO> result = new ArrayList<>();
 

@@ -22,7 +22,7 @@ public class AppartamentoDettagliDTO {
     private String cup;
     private String cin;
     private String cir;
-
+    private Integer tipoGestioneId;
     // dettagli appartamento
     private LocalDate dataInizioAttivita;
     private BigDecimal costoPulizie;

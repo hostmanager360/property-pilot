@@ -59,7 +59,7 @@ public class TenantServiceImpl implements TenantService {
     @Transactional
     @Override
     public Tenant createTenant(CreateTenantDTO dto) {
-        User user = userRepository.findById(dto.getUserId())
+        User user = userRepository.findById((long) dto.getUserId())
                 .orElseThrow(() -> new RuntimeException("User non trovato"));
 
         if (user.getTenantKey() != null) {
