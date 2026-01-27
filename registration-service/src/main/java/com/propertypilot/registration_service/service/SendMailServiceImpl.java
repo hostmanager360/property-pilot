@@ -49,5 +49,27 @@ public class SendMailServiceImpl implements SenEmailService{
             throw new EmailSendException("Errore durante l'invio dell'email");
         }
     }
+    public void sendResetPasswordEmail(String to, String name, String link) {
+        try {
+            Context context = new Context();
+            context.setVariable("name", name);
+            context.setVariable("resetLink", link);
+
+            String html = templateEngine.process("reset-password-email", context);
+
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+
+            helper.setTo(to);
+            helper.setSubject("Reimposta la tua password");
+            helper.setText(html, true);
+
+            mailSender.send(mimeMessage);
+
+        } catch (MailException | MessagingException e) {
+            throw new EmailSendException("Errore durante l'invio dell'email di reset password");
+        }
+    }
+
 
 }

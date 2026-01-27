@@ -23,6 +23,7 @@ public class TenantFilter extends OncePerRequestFilter {
 
     @Autowired
     UserRepository userRepository;
+
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -33,20 +34,33 @@ public class TenantFilter extends OncePerRequestFilter {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         if (auth instanceof JwtAuthenticationToken jwtAuth) {
-            String tenant = jwtAuth.getToken().getClaimAsString("tenantKey");
-            String emailUser = jwtAuth.getToken().getSubject();
-            Optional<User> userOpt = userRepository.findByEmail(emailUser);
 
-            User user = userOpt.orElseThrow(
-                    () -> new UserNotFoundException("Utente non trovato con email: " + emailUser)
-            );
+            String tenantFromJwt = jwtAuth.getToken().getClaimAsString("tenantKey");
+            String email = jwtAuth.getToken().getSubject();
 
-            if (!user.getTenantKey().equals(tenant)) {
-                throw new UserNotFoundException("L'utente non appartiene al tenant corrente.");
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new UserNotFoundException("Utente non trovato: " + email));
+
+            String tenantFromDb = user.getTenantKey();
+
+            // 🔥 1. Se l’utente NON ha ancora un tenant → bypass
+            if (tenantFromDb == null) {
+                chain.doFilter(request, response);
+                return;
             }
 
+            // 🔥 2. Se il JWT non ha tenant → errore
+            if (tenantFromJwt == null) {
+                throw new UserNotFoundException("Tenant mancante nel token");
+            }
 
-            TenantContext.setTenant(tenant);
+            // 🔥 3. Se non coincidono → errore
+            if (!tenantFromDb.equals(tenantFromJwt)) {
+                throw new UserNotFoundException("L'utente non appartiene al tenant corrente");
+            }
+
+            // 🔥 4. Imposta tenant nel contesto
+            TenantContext.setTenant(tenantFromJwt);
         }
 
         try {

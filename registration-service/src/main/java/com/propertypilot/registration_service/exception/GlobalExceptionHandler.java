@@ -1,6 +1,7 @@
 package com.propertypilot.registration_service.exception;
 
 import com.propertypilot.registration_service.model.ResponseHandler;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -42,6 +43,12 @@ public class GlobalExceptionHandler {
                 ResponseHandler.error(3002, ex.getMessage())
         );
     }
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ResponseHandler<Object>> handleForbidden(ForbiddenException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ResponseHandler.error(4001, ex.getMessage()));
+    }
+
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ResponseHandler<?>> handleGeneric(Exception ex) {

@@ -13,3 +13,4 @@ public class PrevisioneGuadagnoException extends RuntimeException {
         return code;
     }
 }
+

@@ -11,8 +11,10 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserDto {
-    String email;
-    String password;
-    String role;
-    String confermaPassword;
+    private String email;
+    private String password;
+    private String confermaPassword;
+    private String role;       // per register base
+    private String tenantKey;  // opzionale per admin creato da OWNER
 }
+

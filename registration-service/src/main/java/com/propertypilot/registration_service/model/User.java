@@ -5,7 +5,8 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -25,54 +26,39 @@ public class User {
     @Column(nullable = false)
     private boolean enabled = false;
 
-    @Column(nullable = false, length = 50)
-    private String role; // OWNER, ADMIN, USER
-
     @Column(name = "tenant_key", length = 50)
     private String tenantKey;
+
+    // 🔥 Nuovo: obbligo reset password
+    @Column(name = "password_reset_required")
+    private Boolean passwordResetRequired = false;
+
+    // 🔥 Nuovo: primo accesso dopo reset
+    @Column(name = "first_access_completed")
+    private Boolean firstAccessCompleted = false;
+
+    // 🔥 Nuovo: token reset password
+    @Column(name = "reset_password_token", length = 255)
+    private String resetPasswordToken;
+
+    // 🔥 Nuovo: scadenza token reset
+    @Column(name = "reset_password_expires_at")
+    private LocalDateTime resetPasswordExpiresAt;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    // Getter
-    public Long getId() {
-        return id;
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "role_id", nullable = false)
+    private Role roleEntity;
 
-    public String getEmail() {
-        return email;
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "first_access_step_id", nullable = false)
+    private FirstAccessStep firstAccessStep;
 
-    public String getPassword() {
-        return password;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    // Setter
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
+    // 🔥 Auto-set timestamps
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
     }
 }
