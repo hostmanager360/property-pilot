@@ -28,7 +28,6 @@ public class SendMailServiceImpl implements SenEmailService{
     }
 
     public void sendVerificationEmail(String to,String name, String link) {
-        SimpleMailMessage message = new SimpleMailMessage();
         try {
             Context context = new Context();
             context.setVariable("name", name);

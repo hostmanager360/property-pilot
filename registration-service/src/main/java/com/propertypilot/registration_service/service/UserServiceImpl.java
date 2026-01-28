@@ -33,6 +33,68 @@ public class UserServiceImpl implements UserService {
     @Autowired
     CurrentUserProvider currentUserProvider;
 
+    // -------------------------
+    // UTILITY
+    // -------------------------
+
+    private void validatePassword(UserDto dto) {
+        if (!dto.getPassword().equals(dto.getConfermaPassword())) {
+            throw new PasswordMismatchException("Le password non coincidono");
+        }
+    }
+
+    private void validateTenantKey(String tenantKey) {
+        if (tenantKey == null || tenantKey.isBlank()) {
+            throw new InvalidTenantException("TenantKey mancante o non valido");
+        }
+    }
+
+    private Role getRoleOrThrow(String code) {
+        return roleRepository.findByCode(code)
+                .orElseThrow(() -> new RoleNotFoundException("Ruolo non trovato: " + code));
+    }
+
+    private FirstAccessStep getInitialStep() {
+        return firstAccessStepRepository.findByCode("COMPLETE_USER_DETAIL")
+                .orElseThrow(() -> new StepNotFoundException("Step iniziale non trovato"));
+    }
+
+    private void sendActivationEmail(User user) {
+        try {
+            String token = UUID.randomUUID().toString();
+
+            VerificationToken verificationToken = new VerificationToken();
+            verificationToken.setToken(token);
+            verificationToken.setUser(user);
+            verificationToken.setExpiresAt(LocalDateTime.now().plusHours(24));
+
+            verificationTokenRepository.save(verificationToken);
+
+            String link = "http://localhost:8082/api/users/verify?token=" + token;
+            sendEmailService.sendVerificationEmail(user.getEmail(), user.getEmail(), link);
+
+        } catch (Exception e) {
+            throw new EmailSendException("Errore durante l'invio dell'email di attivazione");
+        }
+    }
+
+    private User buildNewUser(UserDto dto, Role role, String tenantKey) {
+        User user = new User();
+        user.setEmail(dto.getEmail());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setRoleEntity(role);
+        user.setEnabled(false);
+        user.setTenantKey(tenantKey);
+        user.setPasswordResetRequired(true);
+        user.setFirstAccessCompleted(false);
+        user.setFirstAccessStep(getInitialStep());
+        return user;
+    }
+
+    // -------------------------
+    // REGISTER
+    // -------------------------
+
     @Transactional
     public User registerUser(UserDto dto) {
 
@@ -45,52 +107,23 @@ public class UserServiceImpl implements UserService {
             throw new InvalidEmailException("Email non valida");
         }
 
-        // 🔥 Recupero ruolo dal DB
-        Role role = roleRepository.findByCode(dto.getRole())
-                .orElseThrow(() -> new RuntimeException("Ruolo non valido: " + dto.getRole()));
-
-        // 🔥 Step iniziale: COMPLETE_USER_DETAIL per tutti tranne OWNER
-        FirstAccessStep step = firstAccessStepRepository.findByCode("COMPLETE_USER_DETAIL")
-                .orElseThrow(() -> new RuntimeException("Step non trovato"));
-
-        User user = new User();
-        user.setEmail(dto.getEmail());
-        user.setPassword(passwordEncoder.encode(dto.getPassword()));
-        user.setRoleEntity(role);
-        user.setEnabled(false);
-        user.setPasswordResetRequired(true);
-        user.setFirstAccessCompleted(false);
-        user.setFirstAccessStep(step);
+        Role role = getRoleOrThrow(dto.getRole());
+        User user = buildNewUser(dto, role, null);
 
         userRepository.save(user);
-
-        // 🔥 Genera token di verifica
-        String token = UUID.randomUUID().toString();
-
-        VerificationToken verificationToken = new VerificationToken();
-        verificationToken.setToken(token);
-        verificationToken.setUser(user);
-        verificationToken.setExpiresAt(LocalDateTime.now().plusHours(24));
-
-        verificationTokenRepository.save(verificationToken);
-
-        // 🔥 Invia email
-        String link = "http://localhost:8082/api/users/verify?token=" + token;
-        sendEmailService.sendVerificationEmail(user.getEmail(), user.getEmail(), link);
+        sendActivationEmail(user);
 
         return user;
-    }
-
-    private void validatePassword(UserDto dto) {
-        if (!dto.getPassword().equals(dto.getConfermaPassword())) {
-            throw new PasswordMismatchException("Le password non coincidono");
-        }
     }
 
     public boolean isValidEmail(String email) {
         String regex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
         return email != null && email.matches(regex);
     }
+
+    // -------------------------
+    // CREATE ADMIN
+    // -------------------------
 
     @Transactional
     public User createAdmin(UserDto dto, String tenantKey) {
@@ -102,6 +135,7 @@ public class UserServiceImpl implements UserService {
         }
 
         validatePassword(dto);
+        validateTenantKey(tenantKey);
 
         if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
             throw new EmailAlreadyExistsException("Email già registrata");
@@ -110,40 +144,31 @@ public class UserServiceImpl implements UserService {
             throw new InvalidEmailException("Email non valida");
         }
 
-        Role adminRole = roleRepository.findByCode("ADMIN")
-                .orElseThrow(() -> new RuntimeException("Ruolo ADMIN non trovato"));
-
-        FirstAccessStep step = firstAccessStepRepository.findByCode("COMPLETE_USER_DETAIL")
-                .orElseThrow(() -> new RuntimeException("Step non trovato"));
-
-        User user = new User();
-        user.setEmail(dto.getEmail());
-        user.setPassword(passwordEncoder.encode(dto.getPassword()));
-        user.setRoleEntity(adminRole);
-        user.setEnabled(false);
-        user.setTenantKey(tenantKey);
-        user.setPasswordResetRequired(true);
-        user.setFirstAccessCompleted(false);
-        user.setFirstAccessStep(step);
+        Role adminRole = getRoleOrThrow("ADMIN");
+        User user = buildNewUser(dto, adminRole, tenantKey);
 
         userRepository.save(user);
         sendActivationEmail(user);
+
         return user;
     }
 
+    // -------------------------
+    // CREATE HOST
+    // -------------------------
 
     @Transactional
     public User createHost(UserDto dto, String tenantKey) {
 
         User creator = currentUserProvider.getCurrentUserOrThrow();
-
-        // 🔥 Controllo ruolo tramite RoleEntity
         String creatorRole = creator.getRoleEntity().getCode();
+
         if (!creatorRole.equals("OWNER") && !creatorRole.equals("ADMIN")) {
             throw new ForbiddenException("Solo OWNER o ADMIN possono creare HOST");
         }
 
         validatePassword(dto);
+        validateTenantKey(tenantKey);
 
         if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
             throw new EmailAlreadyExistsException("Email già registrata");
@@ -152,35 +177,25 @@ public class UserServiceImpl implements UserService {
             throw new InvalidEmailException("Email non valida");
         }
 
-        // 🔥 Recupero ruolo HOST dal DB
-        Role hostRole = roleRepository.findByCode("HOST")
-                .orElseThrow(() -> new RuntimeException("Ruolo HOST non trovato"));
-
-        // 🔥 Step iniziale: COMPLETE_USER_DETAIL
-        FirstAccessStep step = firstAccessStepRepository.findByCode("COMPLETE_USER_DETAIL")
-                .orElseThrow(() -> new RuntimeException("Step non trovato"));
-
-        User user = new User();
-        user.setEmail(dto.getEmail());
-        user.setPassword(passwordEncoder.encode(dto.getPassword()));
-        user.setRoleEntity(hostRole);
-        user.setEnabled(false);
-        user.setTenantKey(tenantKey);
-        user.setPasswordResetRequired(true);
-        user.setFirstAccessCompleted(false);
-        user.setFirstAccessStep(step);
+        Role hostRole = getRoleOrThrow("HOST");
+        User user = buildNewUser(dto, hostRole, tenantKey);
 
         userRepository.save(user);
         sendActivationEmail(user);
+
         return user;
     }
+
+    // -------------------------
+    // CREATE COHOST
+    // -------------------------
 
     @Transactional
     public User createCohost(UserDto dto, String tenantKey) {
 
         User creator = currentUserProvider.getCurrentUserOrThrow();
-
         String creatorRole = creator.getRoleEntity().getCode();
+
         if (!creatorRole.equals("OWNER") &&
                 !creatorRole.equals("ADMIN") &&
                 !creatorRole.equals("HOST")) {
@@ -189,6 +204,7 @@ public class UserServiceImpl implements UserService {
         }
 
         validatePassword(dto);
+        validateTenantKey(tenantKey);
 
         if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
             throw new EmailAlreadyExistsException("Email già registrata");
@@ -197,29 +213,18 @@ public class UserServiceImpl implements UserService {
             throw new InvalidEmailException("Email non valida");
         }
 
-        // 🔥 Recupero ruolo COHOST dal DB
-        Role cohostRole = roleRepository.findByCode("COHOST")
-                .orElseThrow(() -> new RuntimeException("Ruolo COHOST non trovato"));
-
-        // 🔥 Step iniziale: COMPLETE_USER_DETAIL
-        FirstAccessStep step = firstAccessStepRepository.findByCode("COMPLETE_USER_DETAIL")
-                .orElseThrow(() -> new RuntimeException("Step non trovato"));
-
-        User user = new User();
-        user.setEmail(dto.getEmail());
-        user.setPassword(passwordEncoder.encode(dto.getPassword()));
-        user.setRoleEntity(cohostRole);
-        user.setEnabled(false);
-        user.setTenantKey(tenantKey);
-        user.setPasswordResetRequired(true);
-        user.setFirstAccessCompleted(false);
-        user.setFirstAccessStep(step);
+        Role cohostRole = getRoleOrThrow("COHOST");
+        User user = buildNewUser(dto, cohostRole, tenantKey);
 
         userRepository.save(user);
         sendActivationEmail(user);
+
         return user;
     }
 
+    // -------------------------
+    // FORGOT PASSWORD
+    // -------------------------
 
     @Transactional
     public void forgotPassword(ForgotPasswordRequestDTO dto) {
@@ -235,15 +240,17 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(user);
 
-        String link = "http://localhost:8082/api/users/resetPasswordVerifyToken?token=" + token;
-
-        sendEmailService.sendResetPasswordEmail(
-                user.getEmail(),
-                user.getEmail(),
-                link
-        );
+        try {
+            String link = "http://localhost:8082/api/users/resetPasswordVerifyToken?token=" + token;
+            sendEmailService.sendResetPasswordEmail(user.getEmail(), user.getEmail(), link);
+        } catch (Exception e) {
+            throw new EmailSendException("Errore durante l'invio dell'email di reset password");
+        }
     }
 
+    // -------------------------
+    // RESET PASSWORD
+    // -------------------------
 
     @Transactional
     public void resetPassword(ResetPasswordRequestDTO dto) {
@@ -262,38 +269,12 @@ public class UserServiceImpl implements UserService {
 
         user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
         user.setPasswordResetRequired(false);
-
-        // 🔥 Dopo reset password → obbligo primo accesso
         user.setFirstAccessCompleted(false);
-
-        // 🔥 Step iniziale dopo reset → COMPLETE_USER_DETAIL
-        FirstAccessStep step = firstAccessStepRepository.findByCode("COMPLETE_USER_DETAIL")
-                .orElseThrow(() -> new RuntimeException("Step non trovato"));
-        user.setFirstAccessStep(step);
-
+        user.setFirstAccessStep(getInitialStep());
         user.setResetPasswordToken(null);
         user.setResetPasswordExpiresAt(null);
 
         userRepository.save(user);
     }
-    private void sendActivationEmail(User user) {
-        String token = UUID.randomUUID().toString();
-
-        VerificationToken verificationToken = new VerificationToken();
-        verificationToken.setToken(token);
-        verificationToken.setUser(user);
-        verificationToken.setExpiresAt(LocalDateTime.now().plusHours(24));
-
-        verificationTokenRepository.save(verificationToken);
-
-        String link = "http://localhost:8082/api/users/verify?token=" + token;
-
-        sendEmailService.sendVerificationEmail(
-                user.getEmail(),
-                user.getEmail(),
-                link
-        );
-    }
-
 }
 

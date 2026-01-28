@@ -1,9 +1,12 @@
 package com.propertypilot.coreservice.config;
 
+import com.propertypilot.coreservice.exceptionCustom.ForbiddenException;
+import com.propertypilot.coreservice.exceptionCustom.UserNotFoundException;
 import com.propertypilot.coreservice.model.User;
 import com.propertypilot.coreservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
@@ -19,23 +22,28 @@ public class CurrentUserProvider {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         if (!(auth instanceof JwtAuthenticationToken jwtAuth)) {
-            throw new RuntimeException("Autenticazione JWT non valida");
+            throw new AuthenticationException("Token JWT non valido") {};
         }
 
         String email = jwtAuth.getToken().getSubject();
-        String roleFromJwt = jwtAuth.getToken().getClaim("role").toString();
+        String roleFromJwt = jwtAuth.getToken().getClaimAsString("role");
+        String tenantFromJwt = jwtAuth.getToken().getClaimAsString("tenantKey");
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Utente autenticato non trovato"));
+                .orElseThrow(() -> new UserNotFoundException("Utente non trovato"));
 
-        // 🔥 Confronto ruolo JWT vs ruolo DB
-        if (user != null &&
-                user.getRoleEntity()  != null &&
-                !user.getRoleEntity().getCode().isEmpty() &&
-                !user.getRoleEntity().getCode().equals(roleFromJwt)) {
-            throw new RuntimeException("Ruolo JWT non coerente con il ruolo attuale dell'utente");
+        // Ruolo coerente
+        if (!user.getRoleEntity().getCode().equals(roleFromJwt)) {
+            throw new ForbiddenException("Ruolo JWT non coerente con DB");
+        }
+
+        // Tenant coerente
+        if (user.getTenantKey() != null && tenantFromJwt != null &&
+                !user.getTenantKey().equals(tenantFromJwt)) {
+            throw new ForbiddenException("Tenant non coerente");
         }
 
         return user;
     }
+
 }
