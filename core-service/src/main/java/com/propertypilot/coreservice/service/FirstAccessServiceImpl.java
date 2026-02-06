@@ -43,7 +43,6 @@ public class FirstAccessServiceImpl implements FirstAccessService {
     @Override
     @Transactional
     public void createTenant(CreateTenantDTO dto) {
-
         User user = currentUserProvider.getCurrentUserOrThrow();
 
         if (!"ADMIN".equals(user.getRoleEntity().getCode())) {
@@ -54,10 +53,14 @@ public class FirstAccessServiceImpl implements FirstAccessService {
             throw new ForbiddenException("Tenant già associato all'utente");
         }
 
-        tenantService.createTenant(dto);
-
-        updateStep(user, "COMPLETE_USER_DETAIL");
+        tenantService.createTenant(user, dto);
+        if(dto.getTipoSoggetto() != null && "PERSONA_FISICA".equalsIgnoreCase(dto.getTipoSoggetto())){
+            updateStep(user, "COMPLETE_USER_DETAIL");
+        } else {
+            updateStep(user, "DASHBOARD");
+        }
     }
+
 
     @Override
     @Transactional

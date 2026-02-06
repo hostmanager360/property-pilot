@@ -27,6 +27,8 @@ public class JwtTokenProvider {
                 .setSubject(user.getEmail())
                 .claim("role", user.getRoleEntity().getCode())
                 .claim("tenantKey", user.getTenantKey())
+                .claim("firstAccessStep", user.getFirstAccessStep().getId())
+                .claim("firstAccessCompleted", user.getFirstAccessCompleted())
                 .setIssuedAt(new Date())
                 .setExpiration(Date.from(Instant.now().plus(1, ChronoUnit.DAYS)))
                 .signWith(key, SignatureAlgorithm.HS256)

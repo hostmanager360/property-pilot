@@ -6,22 +6,29 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class TenantMapper {
-    public TenantResponseDTO toDTO(Tenant tenant) {
+
+    public TenantResponseDTO toDTO(Tenant t) {
+        if (t == null) return null;
+
         return TenantResponseDTO.builder()
-                .keyTenant(tenant.getKeyTenant())
-                .nome(tenant.getNome())
-                .cognome(tenant.getCognome())
-                .codiceFiscale(tenant.getCodiceFiscale())
-                .partitaIva(tenant.getPartitaIva())
-                .viaResidenza(tenant.getViaResidenza())
-                .civicoResidenza(tenant.getCivicoResidenza())
-                .cittaResidenza(tenant.getCittaResidenza())
-                .capResidenza(tenant.getCapResidenza())
-                .dataIscrizione(tenant.getDataIscrizione())
-                .dataScadenza(tenant.getDataScadenza())
-                .tipoLicenza(tenant.getTipoLicenza().getCodiceLicenza())
-                .status(tenant.getStatus().getStatusCode())
+                .keyTenant(t.getKeyTenant())
+                .tipoSoggetto(t.getTipoSoggetto())
+                .nome(t.getNome())
+                .cognome(t.getCognome())
+                .codiceFiscale(t.getCodiceFiscale())
+                .ragioneSociale(t.getRagioneSociale())
+                .partitaIva(t.getPartitaIva())
+                .viaResidenza(t.getViaResidenza())
+                .civicoResidenza(t.getCivicoResidenza())
+                .cittaResidenza(t.getCittaResidenza())
+                .capResidenza(t.getCapResidenza())
+                .viaSedeFisica(t.getViaSedeFisica())
+                .cittaSedeFisica(t.getCittaSedeFisica())
+                .capSedeFisica(t.getCapSedeFisica())
+                .dataIscrizione(t.getDataIscrizione())
+                .dataScadenza(t.getDataScadenza())
+                .tipoLicenzaId(t.getTipoLicenza().getId())
+                .statusId(t.getStatus().getId())
                 .build();
     }
-
 }

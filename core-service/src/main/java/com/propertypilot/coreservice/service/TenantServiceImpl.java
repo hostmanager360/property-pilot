@@ -58,14 +58,12 @@ public class TenantServiceImpl implements TenantService {
 
     @Transactional
     @Override
-    public Tenant createTenant(CreateTenantDTO dto) {
-        User user = userRepository.findById((long) dto.getUserId())
-                .orElseThrow(() -> new RuntimeException("User non trovato"));
+    public Tenant createTenant(User user, CreateTenantDTO dto) {
 
         if (user.getTenantKey() != null) {
             throw new TenantAlreadyExistsException("L'utente ha già un tenant associato.");
         }
-
+        validateTenantData(dto);
         String keyTenant = generateKeyTenant();
 
         TipoLicenza tipoLicenza = tipoLicenzaRepository.findById(dto.getTipoLicenzaId())
@@ -74,21 +72,25 @@ public class TenantServiceImpl implements TenantService {
         StatusTenant status = statusTenantRepository.findById(dto.getStatusId())
                 .orElseThrow(() -> new StatusTenantNotFoundException("Status tenant non trovato"));
 
-        // eventuali validazioni aggiuntive
         if (dto.getDataScadenza() != null && dto.getDataScadenza().isBefore(dto.getDataIscrizione())) {
             throw new InvalidTenantDataException("La data di scadenza non può essere precedente alla data di iscrizione");
         }
 
         Tenant tenant = Tenant.builder()
                 .keyTenant(keyTenant)
+                .tipoSoggetto(dto.getTipoSoggetto())
                 .nome(dto.getNome())
                 .cognome(dto.getCognome())
                 .codiceFiscale(dto.getCodiceFiscale())
+                .ragioneSociale(dto.getRagioneSociale())
                 .partitaIva(dto.getPartitaIva())
                 .viaResidenza(dto.getViaResidenza())
                 .civicoResidenza(dto.getCivicoResidenza())
                 .cittaResidenza(dto.getCittaResidenza())
                 .capResidenza(dto.getCapResidenza())
+                .viaSedeFisica(dto.getViaSedeFisica())
+                .cittaSedeFisica(dto.getCittaSedeFisica())
+                .capSedeFisica(dto.getCapSedeFisica())
                 .dataIscrizione(dto.getDataIscrizione())
                 .dataScadenza(dto.getDataScadenza())
                 .tipoLicenza(tipoLicenza)
@@ -97,13 +99,75 @@ public class TenantServiceImpl implements TenantService {
 
         Tenant savedTenant = tenantRepository.save(tenant);
 
-        // 5. Aggiorna l’utente con la keyTenant
         user.setTenantKey(keyTenant);
         userRepository.save(user);
 
         return savedTenant;
-
     }
+
+    private void validateTenantData(CreateTenantDTO dto) {
+
+        if (!dto.getTipoSoggetto().equals("PERSONA_FISICA") &&
+                !dto.getTipoSoggetto().equals("AZIENDA")) {
+            throw new InvalidTenantDataException("Tipo soggetto non valido");
+        }
+
+        // Persona fisica
+        if (dto.getTipoSoggetto().equals("PERSONA_FISICA")) {
+
+            if (isBlank(dto.getNome()) || isBlank(dto.getCognome())) {
+                throw new InvalidTenantDataException("Nome e cognome sono obbligatori per persona fisica");
+            }
+
+            if (isBlank(dto.getCodiceFiscale())) {
+                throw new InvalidTenantDataException("Codice fiscale obbligatorio per persona fisica");
+            }
+
+            if (isBlank(dto.getViaResidenza()) ||
+                    isBlank(dto.getCivicoResidenza()) ||
+                    isBlank(dto.getCittaResidenza()) ||
+                    isBlank(dto.getCapResidenza())) {
+                throw new InvalidTenantDataException("Indirizzo di residenza obbligatorio per persona fisica");
+            }
+        }
+
+        // Azienda
+        if (dto.getTipoSoggetto().equals("AZIENDA")) {
+
+            if (!isBlank(dto.getCodiceFiscale())) {
+                throw new InvalidTenantDataException("Il codice fiscale non deve essere inserito per un'azienda");
+            }
+
+            if (isBlank(dto.getRagioneSociale())) {
+                throw new InvalidTenantDataException("La ragione sociale è obbligatoria per un'azienda");
+            }
+
+            if (!isBlank(dto.getViaResidenza()) ||
+                    !isBlank(dto.getCivicoResidenza()) ||
+                    !isBlank(dto.getCittaResidenza()) ||
+                    !isBlank(dto.getCapResidenza())) {
+                throw new InvalidTenantDataException("La residenza non deve essere inserita per un'azienda");
+            }
+        }
+
+        // Sede fisica (sempre obbligatoria)
+        if (isBlank(dto.getViaSedeFisica()) ||
+                isBlank(dto.getCittaSedeFisica()) ||
+                isBlank(dto.getCapSedeFisica())) {
+            throw new InvalidTenantDataException("La sede fisica è obbligatoria");
+        }
+
+        // Date
+        if (dto.getDataScadenza() != null &&
+                dto.getDataScadenza().isBefore(dto.getDataIscrizione())) {
+            throw new InvalidTenantDataException("La data di scadenza non può essere precedente alla data di iscrizione");
+        }
+    }
+
+    private boolean isBlank(String s) {
+        return s == null || s.trim().isEmpty();
+    }
+
     private String generateKeyTenant() {
         String lastKey = tenantRepository.findLastKeyTenant(); // es: "TENANT023"
 

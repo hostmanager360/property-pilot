@@ -13,31 +13,35 @@ import java.time.LocalDate;
 @Builder
 public class CreateTenantDTO {
 
-    @NotNull
-    private int userId;
     @NotBlank
+    private String tipoSoggetto; // PERSONA_FISICA | AZIENDA
+
+    // Persona fisica
     private String nome;
-
-    @NotBlank
     private String cognome;
-
-    @NotBlank
     private String codiceFiscale;
+
+    // Dati aziendali
+    private String ragioneSociale;
 
     @NotBlank
     private String partitaIva;
 
-    @NotBlank
+    // Residenza (solo persona fisica)
     private String viaResidenza;
-
-    @NotBlank
     private String civicoResidenza;
-
-    @NotBlank
     private String cittaResidenza;
+    private String capResidenza;
+
+    // Sede fisica (entrambi i casi)
+    @NotBlank
+    private String viaSedeFisica;
 
     @NotBlank
-    private String capResidenza;
+    private String cittaSedeFisica;
+
+    @NotBlank
+    private String capSedeFisica;
 
     @NotNull
     private LocalDate dataIscrizione;

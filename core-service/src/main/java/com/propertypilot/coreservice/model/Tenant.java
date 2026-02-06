@@ -19,18 +19,29 @@ public class Tenant {
     @Column(name = "key_tenant", length = 50)
     private String keyTenant;
 
-    @Column(name = "nome",nullable = false)
+    // Nuovo campo: PERSONA_FISICA | AZIENDA
+    @Column(name = "tipo_soggetto", nullable = false, length = 20)
+    private String tipoSoggetto;
+
+    // Persona fisica
+    @Column(name = "nome")
     private String nome;
 
-    @Column(name ="cognome" ,nullable = false)
+    @Column(name = "cognome")
     private String cognome;
 
     @Column(name = "codice_fiscale")
     private String codiceFiscale;
 
-    @Column(name = "partita_iva")
+    // Azienda
+    @Column(name = "ragione_sociale")
+    private String ragioneSociale;
+
+    // Comune a entrambi
+    @Column(name = "partita_iva", nullable = false)
     private String partitaIva;
 
+    // Residenza (solo persona fisica)
     @Column(name = "via_residenza")
     private String viaResidenza;
 
@@ -42,6 +53,16 @@ public class Tenant {
 
     @Column(name = "cap_residenza")
     private String capResidenza;
+
+    // Sede fisica (entrambi)
+    @Column(name = "via_sede_fisica", nullable = false)
+    private String viaSedeFisica;
+
+    @Column(name = "citta_sede_fisica", nullable = false)
+    private String cittaSedeFisica;
+
+    @Column(name = "cap_sede_fisica", nullable = false)
+    private String capSedeFisica;
 
     @Column(name = "data_iscrizione", nullable = false)
     private LocalDate dataIscrizione;

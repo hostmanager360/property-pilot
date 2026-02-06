@@ -20,19 +20,38 @@ public class CurrentUserProvider {
 
         if (!(auth instanceof JwtAuthenticationToken jwtAuth)) {
             throw new RuntimeException("Autenticazione JWT non valida");
-        }String email = jwtAuth.getToken().getSubject();
-        String role = jwtAuth.getToken().getClaim("role").toString();
-        String tenantKey = jwtAuth.getToken().getClaim("tenantKey").toString();
+        }
+        String email = jwtAuth.getToken().getSubject();
+        String role = jwtAuth.getToken().getClaim("role");
+
+        // tenantKey può essere null → NON usare toString()
+        String tenantKey = jwtAuth.getToken().getClaim("tenantKey");
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Utente autenticato non trovato"));
 
-        // opzionale: verifica coerenza tra DB e JWT
+        // Verifica ruolo coerente
         if (!user.getRoleEntity().getCode().equals(role)) {
             throw new RuntimeException("Ruolo JWT non coerente con DB");
         }
 
+        // 🔥 Se è OWNER → NON deve avere tenantKey
+        if (role.equals("OWNER")) {
+            return user; // tutto ok, nessun tenantKey richiesto
+        }
+
+        // 🔥 Se NON è OWNER → tenantKey DEVE esistere
+        if (tenantKey == null || tenantKey.isBlank()) {
+            throw new RuntimeException("TenantKey mancante per ruolo non-OWNER");
+        }
+
+        // opzionale: puoi verificare che il tenantKey del JWT corrisponda a quello del DB
+        if (!tenantKey.equals(user.getTenantKey())) {
+            throw new RuntimeException("TenantKey JWT non coerente con DB");
+        }
+
         return user;
+
 
     }
 }

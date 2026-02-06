@@ -13,6 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -32,7 +34,6 @@ public class UserServiceImpl implements UserService {
     private VerificationTokenRepository verificationTokenRepository;
     @Autowired
     CurrentUserProvider currentUserProvider;
-
     // -------------------------
     // UTILITY
     // -------------------------
@@ -87,9 +88,27 @@ public class UserServiceImpl implements UserService {
         user.setTenantKey(tenantKey);
         user.setPasswordResetRequired(true);
         user.setFirstAccessCompleted(false);
-        user.setFirstAccessStep(getInitialStep());
         return user;
     }
+    private User buildNewUserOwner(UserDto dto, Role role, String tenantKey) {
+        User user = new User();
+        user.setEmail(dto.getEmail());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setRoleEntity(role);
+        user.setEnabled(false);
+        user.setTenantKey(null);
+        user.setPasswordResetRequired(true);
+        user.setFirstAccessCompleted(true);
+        List<FirstAccessStep> firstAccessStepsList = new ArrayList<>();
+        firstAccessStepsList = firstAccessStepRepository.findAll();
+        for(FirstAccessStep step: firstAccessStepsList) {
+            if("DASHBOARD".equalsIgnoreCase(step.getCode())){
+                user.setFirstAccessStep(step);
+            }
+        }
+        return user;
+    }
+
 
     // -------------------------
     // REGISTER
@@ -108,7 +127,7 @@ public class UserServiceImpl implements UserService {
         }
 
         Role role = getRoleOrThrow(dto.getRole());
-        User user = buildNewUser(dto, role, null);
+        User user = buildNewUserOwner(dto, role, null);
 
         userRepository.save(user);
         sendActivationEmail(user);
@@ -129,13 +148,20 @@ public class UserServiceImpl implements UserService {
     public User createAdmin(UserDto dto, String tenantKey) {
 
         User creator = currentUserProvider.getCurrentUserOrThrow();
-
-        if (!creator.getRoleEntity().getCode().equals("OWNER")) {
+        String finalTenantKey;
+        if (!creator.getRoleEntity().getCode().equals("OWNER") && !creator.getRoleEntity().getCode().equals("ADMIN")) {
             throw new ForbiddenException("Solo OWNER può creare ADMIN");
         }
 
         validatePassword(dto);
-        validateTenantKey(tenantKey);
+        if(creator.getRoleEntity().getCode().equals("OWNER")){
+            // L'OWNER NON ha tenantKey → ignoriamo quello passato e ne generiamo uno nuovo
+            finalTenantKey =  null;
+        } else {
+            validateTenantKey(tenantKey);
+            finalTenantKey=tenantKey;
+        }
+
 
         if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
             throw new EmailAlreadyExistsException("Email già registrata");
@@ -144,9 +170,16 @@ public class UserServiceImpl implements UserService {
             throw new InvalidEmailException("Email non valida");
         }
 
-        Role adminRole = getRoleOrThrow("ADMIN");
-        User user = buildNewUser(dto, adminRole, tenantKey);
 
+        Role adminRole = getRoleOrThrow("ADMIN");
+        User user = buildNewUser(dto, adminRole, finalTenantKey);
+        List<FirstAccessStep> firstAccessStepsList = new ArrayList<>();
+        firstAccessStepsList = firstAccessStepRepository.findAll();
+        for(FirstAccessStep step: firstAccessStepsList) {
+            if("CREATE_TENANT".equalsIgnoreCase(step.getCode())){
+                user.setFirstAccessStep(step);
+            }
+        }
         userRepository.save(user);
         sendActivationEmail(user);
 
@@ -179,7 +212,13 @@ public class UserServiceImpl implements UserService {
 
         Role hostRole = getRoleOrThrow("HOST");
         User user = buildNewUser(dto, hostRole, tenantKey);
-
+        List<FirstAccessStep> firstAccessStepsList = new ArrayList<>();
+        firstAccessStepsList = firstAccessStepRepository.findAll();
+        for(FirstAccessStep step: firstAccessStepsList) {
+            if("COMPLETE_USER_DETAIL".equalsIgnoreCase(step.getCode())){
+                user.setFirstAccessStep(step);
+            }
+        }
         userRepository.save(user);
         sendActivationEmail(user);
 
@@ -215,7 +254,13 @@ public class UserServiceImpl implements UserService {
 
         Role cohostRole = getRoleOrThrow("COHOST");
         User user = buildNewUser(dto, cohostRole, tenantKey);
-
+        List<FirstAccessStep> firstAccessStepsList = new ArrayList<>();
+        firstAccessStepsList = firstAccessStepRepository.findAll();
+        for(FirstAccessStep step: firstAccessStepsList) {
+            if("COMPLETE_USER_DETAIL".equalsIgnoreCase(step.getCode())){
+                user.setFirstAccessStep(step);
+            }
+        }
         userRepository.save(user);
         sendActivationEmail(user);
 
@@ -241,7 +286,7 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
         try {
-            String link = "http://localhost:8082/api/users/resetPasswordVerifyToken?token=" + token;
+            String link = "http://localhost:4200/reset-password-final?token=" + token;
             sendEmailService.sendResetPasswordEmail(user.getEmail(), user.getEmail(), link);
         } catch (Exception e) {
             throw new EmailSendException("Errore durante l'invio dell'email di reset password");
@@ -269,8 +314,24 @@ public class UserServiceImpl implements UserService {
 
         user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
         user.setPasswordResetRequired(false);
-        user.setFirstAccessCompleted(false);
-        user.setFirstAccessStep(getInitialStep());
+        if("OWNER".equalsIgnoreCase(user.getRoleEntity().getCode())){
+            user.setFirstAccessCompleted(true);
+        } else {
+            user.setFirstAccessCompleted(false);
+        }
+
+        if("ADMIN".equalsIgnoreCase(user.getRoleEntity().getCode())){
+            List<FirstAccessStep> firstAccessStepsList = new ArrayList<>();
+            firstAccessStepsList = firstAccessStepRepository.findAll();
+            for(FirstAccessStep step: firstAccessStepsList) {
+                if("CREATE_TENANT".equalsIgnoreCase(step.getCode())){
+                    user.setFirstAccessStep(step);
+                }
+            }
+        } else {
+            user.setFirstAccessStep(getInitialStep());
+        }
+
         user.setResetPasswordToken(null);
         user.setResetPasswordExpiresAt(null);
 

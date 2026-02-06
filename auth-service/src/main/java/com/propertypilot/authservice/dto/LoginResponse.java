@@ -14,7 +14,10 @@ public class LoginResponse {
     private String accessToken;
     private String tokenType;
     private String tenantKey;
-    private String role;
+    private long role;
+    private String email;
+    private String resetPasswordToken;
     private boolean passwordResetRequired;
     private boolean firstAccessRequired;
+    private long firstAccessStep;
 }

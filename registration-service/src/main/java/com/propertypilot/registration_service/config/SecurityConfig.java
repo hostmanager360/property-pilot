@@ -39,8 +39,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/users/register").permitAll()
                         .requestMatchers("/api/users/verify").permitAll()
-                        .requestMatchers("/api/users/forgot-password").permitAll()
                         .requestMatchers("/api/users/reset-password").permitAll()
+                        .requestMatchers("/api/users/forgot-password").permitAll()
                         .requestMatchers("/api/users/resetPasswordVerifyToken").permitAll()
 
 

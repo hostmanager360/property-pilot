@@ -1,5 +1,6 @@
 package com.propertypilot.coreservice.config;
 
+import com.propertypilot.coreservice.filter.OnboardingFilter;
 import com.propertypilot.coreservice.filter.TenantFilter;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,7 +29,7 @@ public class SecurityConfig {
     private String secret;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, TenantFilter tenantFilter) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, TenantFilter tenantFilter, OnboardingFilter onboardingFilter) throws Exception {
 
         http
                 .csrf(csrf -> csrf.disable())
@@ -39,8 +40,8 @@ public class SecurityConfig {
                 )
                 .oauth2ResourceServer(oauth -> oauth
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
-                );
-
+                )
+                .addFilterAfter(onboardingFilter, BearerTokenAuthenticationFilter.class);
         http.addFilterAfter(tenantFilter, BearerTokenAuthenticationFilter.class);
 
         return http.build();

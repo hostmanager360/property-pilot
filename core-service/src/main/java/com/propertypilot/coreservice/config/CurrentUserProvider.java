@@ -42,7 +42,11 @@ public class CurrentUserProvider {
                 !user.getTenantKey().equals(tenantFromJwt)) {
             throw new ForbiddenException("Tenant non coerente");
         }
+        long stepFromJwt = jwtAuth.getToken().getClaim("firstAccessStep");
 
+        if (!user.getFirstAccessStep().getId().equals(stepFromJwt)) {
+            throw new ForbiddenException("Step onboarding non coerente");
+        }
         return user;
     }
 
