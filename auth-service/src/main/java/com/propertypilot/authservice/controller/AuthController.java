@@ -2,6 +2,7 @@ package com.propertypilot.authservice.controller;
 
 import com.propertypilot.authservice.dto.LoginRequest;
 import com.propertypilot.authservice.dto.LoginResponse;
+import com.propertypilot.authservice.dto.ResponseHandler;
 import com.propertypilot.authservice.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,9 +19,14 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         System.out.println("Login chiamato con username: " + request.getEmail());
 
-        return ResponseEntity.ok(authService.login(request));
+        LoginResponse response = authService.login(request);
+
+        return ResponseEntity.ok(
+                ResponseHandler.success(response, "Login effettuato con successo")
+        );
+
     }
 }

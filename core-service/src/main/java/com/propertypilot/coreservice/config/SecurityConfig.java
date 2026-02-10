@@ -36,6 +36,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/core/public/**").permitAll()
                         .requestMatchers("/api/core/private/**").authenticated()
+                        .requestMatchers("/api/roles/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth -> oauth

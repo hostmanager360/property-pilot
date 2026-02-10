@@ -21,7 +21,11 @@ import java.util.List;
 public class JwtPresenceFilter implements GlobalFilter, Ordered {
 
     private static final List<String> PROTECTED_PREFIXES = List.of(
-            "/api/core/private", "/api/users/create-admin", "/api/users/create-host", "/api/users/create-cohost"
+            "/api/core/private",
+            "/api/users/create-admin",
+            "/api/users/create-host",
+            "/api/users/create-cohost",
+            "/api/core/roles/getRoles"
     );
 
     private static final List<String> PUBLIC_PREFIXES = List.of(

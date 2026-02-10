@@ -1,6 +1,7 @@
 package com.propertypilot.registration_service.exception;
 
 import com.propertypilot.registration_service.model.ResponseHandler;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     // -------------------------
@@ -18,27 +20,37 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EmailAlreadyExistsException.class)
     public ResponseEntity<ResponseHandler<?>> handleEmailExists(EmailAlreadyExistsException ex) {
-        return ResponseEntity.badRequest().body(ResponseHandler.error(1001, ex.getMessage()));
+        log.warn("Email già registrata: {}", ex.getMessage());
+        return ResponseEntity.badRequest()
+                .body(ResponseHandler.error(ErrorCode.EMAIL_ALREADY_EXISTS.getCode(), ex.getMessage()));
     }
 
     @ExceptionHandler(InvalidEmailException.class)
     public ResponseEntity<ResponseHandler<?>> handleInvalidEmail(InvalidEmailException ex) {
-        return ResponseEntity.badRequest().body(ResponseHandler.error(1002, ex.getMessage()));
+        log.warn("Email non valida: {}", ex.getMessage());
+        return ResponseEntity.badRequest()
+                .body(ResponseHandler.error(ErrorCode.INVALID_EMAIL.getCode(), ex.getMessage()));
     }
 
     @ExceptionHandler(PasswordMismatchException.class)
     public ResponseEntity<ResponseHandler<?>> handlePasswordMismatch(PasswordMismatchException ex) {
-        return ResponseEntity.badRequest().body(ResponseHandler.error(1003, ex.getMessage()));
+        log.warn("Password mismatch: {}", ex.getMessage());
+        return ResponseEntity.badRequest()
+                .body(ResponseHandler.error(ErrorCode.PASSWORD_MISMATCH.getCode(), ex.getMessage()));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ResponseHandler<?>> handleInvalidJson(HttpMessageNotReadableException ex) {
-        return ResponseEntity.badRequest().body(ResponseHandler.error(1004, "JSON non valido"));
+        log.warn("JSON non valido", ex);
+        return ResponseEntity.badRequest()
+                .body(ResponseHandler.error(ErrorCode.INVALID_JSON.getCode(), ErrorCode.INVALID_JSON.getDefaultMessage()));
     }
 
     @ExceptionHandler(InvalidTenantException.class)
     public ResponseEntity<ResponseHandler<?>> handleInvalidTenant(InvalidTenantException ex) {
-        return ResponseEntity.badRequest().body(ResponseHandler.error(1005, ex.getMessage()));
+        log.warn("Tenant non valido: {}", ex.getMessage());
+        return ResponseEntity.badRequest()
+                .body(ResponseHandler.error(ErrorCode.INVALID_TENANT.getCode(), ex.getMessage()));
     }
 
     // -------------------------
@@ -47,7 +59,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EmailSendException.class)
     public ResponseEntity<ResponseHandler<?>> handleEmailSend(EmailSendException ex) {
-        return ResponseEntity.status(500).body(ResponseHandler.error(2001, ex.getMessage()));
+        log.error("Errore invio email: {}", ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ResponseHandler.error(ErrorCode.EMAIL_SEND_ERROR.getCode(), ex.getMessage()));
     }
 
     // -------------------------
@@ -56,12 +70,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(TokenNotFoundException.class)
     public ResponseEntity<ResponseHandler<?>> handleTokenNotFound(TokenNotFoundException ex) {
-        return ResponseEntity.badRequest().body(ResponseHandler.error(3001, ex.getMessage()));
+        log.warn("Token non trovato: {}", ex.getMessage());
+        return ResponseEntity.badRequest()
+                .body(ResponseHandler.error(ErrorCode.TOKEN_NOT_FOUND.getCode(), ex.getMessage()));
     }
 
     @ExceptionHandler(TokenExpiredException.class)
     public ResponseEntity<ResponseHandler<?>> handleTokenExpired(TokenExpiredException ex) {
-        return ResponseEntity.badRequest().body(ResponseHandler.error(3002, ex.getMessage()));
+        log.warn("Token scaduto: {}", ex.getMessage());
+        return ResponseEntity.badRequest()
+                .body(ResponseHandler.error(ErrorCode.TOKEN_EXPIRED.getCode(), ex.getMessage()));
     }
 
     // -------------------------
@@ -70,30 +88,37 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<ResponseHandler<?>> handleForbidden(ForbiddenException ex) {
+        log.warn("Accesso negato: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ResponseHandler.error(4001, ex.getMessage()));
+                .body(ResponseHandler.error(ErrorCode.FORBIDDEN.getCode(), ex.getMessage()));
     }
 
     @ExceptionHandler(RoleNotFoundException.class)
     public ResponseEntity<ResponseHandler<?>> handleRoleNotFound(RoleNotFoundException ex) {
-        return ResponseEntity.badRequest().body(ResponseHandler.error(4002, ex.getMessage()));
+        log.warn("Ruolo non trovato: {}", ex.getMessage());
+        return ResponseEntity.badRequest()
+                .body(ResponseHandler.error(ErrorCode.ROLE_NOT_FOUND.getCode(), ex.getMessage()));
     }
 
     @ExceptionHandler(StepNotFoundException.class)
     public ResponseEntity<ResponseHandler<?>> handleStepNotFound(StepNotFoundException ex) {
-        return ResponseEntity.badRequest().body(ResponseHandler.error(4003, ex.getMessage()));
+        log.warn("Step non trovato: {}", ex.getMessage());
+        return ResponseEntity.badRequest()
+                .body(ResponseHandler.error(ErrorCode.STEP_NOT_FOUND.getCode(), ex.getMessage()));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ResponseHandler<?>> handleAccessDenied(AccessDeniedException ex) {
+        log.warn("Accesso negato (Spring Security): {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ResponseHandler.error(4004, "Accesso negato"));
+                .body(ResponseHandler.error(ErrorCode.ACCESS_DENIED.getCode(), ErrorCode.ACCESS_DENIED.getDefaultMessage()));
     }
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ResponseHandler<?>> handleAuth(AuthenticationException ex) {
+        log.warn("Autenticazione fallita: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ResponseHandler.error(4005, "Autenticazione richiesta"));
+                .body(ResponseHandler.error(ErrorCode.AUTH_REQUIRED.getCode(), ErrorCode.AUTH_REQUIRED.getDefaultMessage()));
     }
 
     // -------------------------
@@ -102,7 +127,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ResponseHandler<?>> handleGeneric(Exception ex) {
-        return ResponseEntity.status(500)
-                .body(ResponseHandler.error(9999, "Errore interno del server"));
+        log.error("Errore interno del server", ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ResponseHandler.error(ErrorCode.GENERIC_ERROR.getCode(), ErrorCode.GENERIC_ERROR.getDefaultMessage()));
     }
 }

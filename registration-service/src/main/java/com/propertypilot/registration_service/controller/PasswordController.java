@@ -9,6 +9,7 @@ import com.propertypilot.registration_service.model.User;
 import com.propertypilot.registration_service.repository.UserRepository;
 import com.propertypilot.registration_service.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,16 +19,17 @@ import java.time.LocalDateTime;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+@Slf4j
 public class PasswordController {
 
-    @Autowired
-    UserService userService;
-    @Autowired
-    UserRepository userRepository;
+
+    private final UserService userService;
 
     @PostMapping("/forgot-password")
     public ResponseEntity<ResponseHandler<Void>> forgotPassword(
             @RequestBody ForgotPasswordRequestDTO dto) {
+
+        log.info("Richiesta forgot-password per email {}", dto.getEmail());
 
         userService.forgotPassword(dto);
 
@@ -36,10 +38,11 @@ public class PasswordController {
         );
     }
 
-
     @PostMapping("/reset-password")
     public ResponseEntity<ResponseHandler<Void>> resetPassword(
             @RequestBody ResetPasswordRequestDTO dto) {
+
+        log.info("Reset password richiesto per token {}", dto.getToken());
 
         userService.resetPassword(dto);
 
@@ -47,20 +50,16 @@ public class PasswordController {
                 ResponseHandler.success(null, "Password reimpostata correttamente")
         );
     }
-    @GetMapping("/resetPasswordVerifyToken")
-    public ResponseEntity<ResponseHandler<String>> validateResetToken(@RequestParam String token) {
 
-        User user = userRepository.findByResetPasswordToken(token)
-                .orElseThrow(() -> new TokenNotFoundException("Token non valido"));
+    @GetMapping("/reset-password/verify")
+    public ResponseEntity<ResponseHandler<Void>> validateResetToken(@RequestParam String token) {
 
-        if (user.getResetPasswordExpiresAt() == null ||
-                user.getResetPasswordExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new TokenExpiredException("Token scaduto");
-        }
+        log.info("Verifica token reset-password: {}", token);
+
+        userService.validateResetPasswordToken(token);
 
         return ResponseEntity.ok(
-                ResponseHandler.success("OK", "Token valido")
+                ResponseHandler.success(null, "Token valido")
         );
     }
-
 }

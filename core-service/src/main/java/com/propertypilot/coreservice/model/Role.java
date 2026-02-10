@@ -21,7 +21,4 @@ public class Role {
     private String code; // OWNER, ADMIN, HOST, COHOST
 
     private String description;
-
-    public Role(String admin) {
-    }
 }

@@ -1,178 +1,172 @@
 package com.propertypilot.coreservice.service;
 
-
 import com.propertypilot.coreservice.dto.PrevisioneGuadagnoDto;
+import com.propertypilot.coreservice.exceptionCustom.ErrorCode;
 import com.propertypilot.coreservice.exceptionCustom.PrevisioneGuadagnoException;
 import com.propertypilot.coreservice.model.PrevisioneGuadagno;
 import com.propertypilot.coreservice.repository.PrevisioneGadagnoRepository;
 import com.propertypilot.coreservice.util.MappingEntity;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 
 @Service
-public class PrevisioneGuadagnoServiceImpl implements PrevisioneGadagnoService{
+@RequiredArgsConstructor
+@Slf4j
+public class PrevisioneGuadagnoServiceImpl implements PrevisioneGadagnoService {
 
-    @Autowired
-    PrevisioneGadagnoRepository pgRepository;
+    private final PrevisioneGadagnoRepository pgRepository;
 
     @Transactional
     @Override
     public PrevisioneGuadagno calcoloCostiPrevisioneGadagno(PrevisioneGuadagnoDto dto) {
+
+        log.info("Calcolo previsione guadagno avviato");
+
         validateDto(dto);
 
-        try{
-            BigDecimal totaleLordoPernottamenti;
-            BigDecimal totaleCostoTassa;
-            BigDecimal totaleCostoPiattaforma;
-            BigDecimal totaleLordoGestione;
-            BigDecimal totaleCostoPulizie;
-            BigDecimal totaleNettoProprietaria;
-            BigDecimal totaleCommisioneHost;
-            BigDecimal totaleCommisioneCoHost;
-
-
-            totaleLordoPernottamenti = calcoloTotaleLordoPernottamenti(dto.getPrezzoMedioPerNotte() , dto.getNumeroNottiMensili());
+        try {
+            BigDecimal totaleLordoPernottamenti = calcolaTotaleLordoPernottamenti(dto.getPrezzoMedioPerNotte(), dto.getNumeroNottiMensili());
             dto.setTotaleLordoPernottamenti(totaleLordoPernottamenti);
 
-            totaleCostoTassa = calcoloCostotasse(dto.getCostoTasse(), totaleLordoPernottamenti);
+            BigDecimal totaleCostoTassa = calcolaCostoTasse(dto.getCostoTasse(), totaleLordoPernottamenti);
             dto.setTotaleCostoTassa(totaleCostoTassa);
 
-            totaleCostoPiattaforma = calcoloCostoPiattaforma(dto.getCostoPiattaforma(), totaleLordoPernottamenti);
+            BigDecimal totaleCostoPiattaforma = calcolaCostoPiattaforma(dto.getCostoPiattaforma(), totaleLordoPernottamenti);
             dto.setTotaleCostoPiattaforma(totaleCostoPiattaforma);
 
-            totaleLordoGestione = calcoloTotaleLordoGestione(dto.getCommissioneGestioneTotale(), totaleLordoPernottamenti, totaleCostoPiattaforma);
+            BigDecimal totaleLordoGestione = calcolaTotaleLordoGestione(dto.getCommissioneGestioneTotale(), totaleLordoPernottamenti, totaleCostoPiattaforma);
             dto.setTotaleLordoGestione(totaleLordoGestione);
 
-            totaleCostoPulizie = calcoloTotaleCostoPulizie(dto.getCostoPulizia(), dto.getNumeroPrenotazioni());
+            BigDecimal totaleCostoPulizie = calcolaTotaleCostoPulizie(dto.getCostoPulizia(), dto.getNumeroPrenotazioni());
             dto.setTotaleCostoPulizie(totaleCostoPulizie);
 
-            totaleNettoProprietaria =calcoloTotaleNettoProprietaria(totaleCostoTassa, totaleCostoPiattaforma, totaleLordoPernottamenti, totaleLordoGestione, totaleCostoPulizie, dto.getCostoUtenzeMensili(), dto.getMutuoAffitto());
+            BigDecimal totaleNettoProprietaria = calcolaTotaleNettoProprietaria(
+                    totaleCostoTassa,
+                    totaleCostoPiattaforma,
+                    totaleLordoPernottamenti,
+                    totaleLordoGestione,
+                    totaleCostoPulizie,
+                    dto.getCostoUtenzeMensili(),
+                    dto.getMutuoAffitto()
+            );
             dto.setTotaleNettoProprietaria(totaleNettoProprietaria);
 
-            totaleCommisioneHost = calcoloTotaleCommisioneHost(dto.getCommissioneHost(), totaleLordoPernottamenti, totaleCostoPiattaforma);
-            dto.setTotaleCommissioneHost(totaleCommisioneHost);
+            BigDecimal totaleCommissioneHost = calcolaTotaleCommissioneHost(dto.getCommissioneHost(), totaleLordoPernottamenti, totaleCostoPiattaforma);
+            dto.setTotaleCommissioneHost(totaleCommissioneHost);
 
-            totaleCommisioneCoHost = calcoloTotaleCommisioneCoHost(dto.getCommissioneCoHost(),totaleLordoPernottamenti, totaleCostoPiattaforma);
-            dto.setTotaleCommissioneCoHost(totaleCommisioneCoHost);
+            BigDecimal totaleCommissioneCoHost = calcolaTotaleCommissioneCoHost(dto.getCommissioneCoHost(), totaleLordoPernottamenti, totaleCostoPiattaforma);
+            dto.setTotaleCommissioneCoHost(totaleCommissioneCoHost);
 
-            PrevisioneGuadagno previsioneEntity;
-            previsioneEntity = MappingEntity.toEntity(dto);
-            previsioneEntity = pgRepository.save(previsioneEntity);
+            PrevisioneGuadagno entity = MappingEntity.toEntity(dto);
+            entity = pgRepository.save(entity);
 
-            return previsioneEntity;
-        }  catch (DataIntegrityViolationException e) {
-            throw new PrevisioneGuadagnoException(1002, "Errore di integrità dati nel salvataggio");
+            log.info("Previsione guadagno salvata con ID {}", entity.getId());
+
+            return entity;
+
+        } catch (DataIntegrityViolationException e) {
+            log.error("Errore integrità dati", e);
+            throw new PrevisioneGuadagnoException(ErrorCode.VALIDATION_ERROR, "Errore di integrità dati nel salvataggio");
         } catch (PrevisioneGuadagnoException e) {
-            throw new PrevisioneGuadagnoException(1001, e.getMessage());
+            log.warn("Errore previsione guadagno: {}", e.getMessage());
+            throw e;
         } catch (Exception e) {
-            throw new PrevisioneGuadagnoException(1003, "Errore imprevisto");
+            log.error("Errore imprevisto durante il calcolo", e);
+            throw new PrevisioneGuadagnoException(ErrorCode.GENERIC_ERROR, "Errore imprevisto");
         }
-
     }
 
+    // ---------------------------------------------------------
+    // METODI DI CALCOLO
+    // ---------------------------------------------------------
 
-    private static BigDecimal calcoloTotaleLordoPernottamenti(BigDecimal prezzoMedioPerNotte, int numeroNottiMensili) {
-        if (prezzoMedioPerNotte == null) {
-            throw new PrevisioneGuadagnoException(1001,"Prezzo medio per notte nullo");
-        }
-        if (numeroNottiMensili <= 0) {
-            throw new PrevisioneGuadagnoException(1001, "Numero notti mensili non valido");
-        }
+    private BigDecimal calcolaTotaleLordoPernottamenti(BigDecimal prezzoMedio, int notti) {
+        if (prezzoMedio == null || prezzoMedio.compareTo(BigDecimal.ZERO) < 0)
+            throw new PrevisioneGuadagnoException(ErrorCode.VALIDATION_ERROR, "Prezzo medio per notte non valido");
 
-        return prezzoMedioPerNotte.multiply(BigDecimal.valueOf(numeroNottiMensili));
+        if (notti <= 0)
+            throw new PrevisioneGuadagnoException(ErrorCode.VALIDATION_ERROR, "Numero notti mensili non valido");
+
+        return prezzoMedio.multiply(BigDecimal.valueOf(notti));
     }
 
-    private BigDecimal calcoloCostotasse(int percentualeTasse, BigDecimal totaleLordoPernottamenti) {
-        if (totaleLordoPernottamenti == null) {
-            throw new PrevisioneGuadagnoException(1001,"Totale lordo pernottamenti nullo");
-        }
+    private BigDecimal calcolaCostoTasse(int percentuale, BigDecimal totaleLordo) {
+        if (percentuale < 0 || percentuale > 100)
+            throw new PrevisioneGuadagnoException(ErrorCode.VALIDATION_ERROR, "Percentuale tasse non valida");
 
-        if (percentualeTasse < 0 || percentualeTasse > 100) {
-            throw new PrevisioneGuadagnoException(1001,"Percentuale tasse non valida: " + percentualeTasse);
-        }
+        return totaleLordo.multiply(BigDecimal.valueOf(percentuale)).divide(BigDecimal.valueOf(100));
+    }
 
-        return totaleLordoPernottamenti
-                .multiply(BigDecimal.valueOf(percentualeTasse))
+    private BigDecimal calcolaCostoPiattaforma(int percentuale, BigDecimal totaleLordo) {
+        return totaleLordo.multiply(BigDecimal.valueOf(percentuale)).divide(BigDecimal.valueOf(100));
+    }
+
+    private BigDecimal calcolaTotaleLordoGestione(int percentuale, BigDecimal totaleLordo, BigDecimal costoPiattaforma) {
+        return totaleLordo.subtract(costoPiattaforma)
+                .multiply(BigDecimal.valueOf(percentuale))
                 .divide(BigDecimal.valueOf(100));
     }
 
-    private BigDecimal calcoloCostoPiattaforma(int costoPiattaforma, BigDecimal totaleLordoPernottamenti) {
-        BigDecimal totaleCostoPiattaforma;
-        totaleCostoPiattaforma = totaleLordoPernottamenti.multiply( BigDecimal.valueOf(costoPiattaforma)
-                                                         .divide(BigDecimal.valueOf(100)));
-        return totaleCostoPiattaforma;
+    private BigDecimal calcolaTotaleCostoPulizie(BigDecimal costoPulizia, int prenotazioni) {
+        return costoPulizia.multiply(BigDecimal.valueOf(prenotazioni));
     }
 
-    private BigDecimal calcoloTotaleLordoGestione(int commissioneGestionetotale, BigDecimal totaleLordoPernottamenti, BigDecimal totaleCostoPiattaforma) {
-        BigDecimal totaleCostoGestione;
-        totaleCostoGestione= ((totaleLordoPernottamenti.subtract(totaleCostoPiattaforma))
-                                                     .multiply(BigDecimal.valueOf(commissioneGestionetotale)))
-                                                     .divide(BigDecimal.valueOf(100));
-        return totaleCostoGestione;
+    private BigDecimal calcolaTotaleNettoProprietaria(
+            BigDecimal tasse,
+            BigDecimal piattaforma,
+            BigDecimal lordo,
+            BigDecimal gestione,
+            BigDecimal pulizie,
+            BigDecimal utenze,
+            BigDecimal mutuo
+    ) {
+        return lordo
+                .subtract(piattaforma)
+                .subtract(tasse)
+                .subtract(gestione)
+                .subtract(pulizie)
+                .subtract(utenze)
+                .subtract(mutuo);
     }
 
-    private BigDecimal calcoloTotaleCostoPulizie(BigDecimal costoPulizia, int numeroPrenotazioni) {
-        BigDecimal totaleCostoPulizie;
-        totaleCostoPulizie = costoPulizia.multiply(BigDecimal.valueOf(numeroPrenotazioni));
-        return totaleCostoPulizie;
+    private BigDecimal calcolaTotaleCommissioneHost(BigDecimal percentuale, BigDecimal lordo, BigDecimal piattaforma) {
+        return lordo.subtract(piattaforma)
+                .multiply(percentuale)
+                .divide(BigDecimal.valueOf(100));
     }
 
-    private BigDecimal calcoloTotaleNettoProprietaria(BigDecimal totaleCostoTassa, BigDecimal totaleCostoPiattaforma, BigDecimal totaleLordoPernottamenti, BigDecimal totaleLordoGestione, BigDecimal totaleCostoPulizie, BigDecimal costoUtenzeMensili, BigDecimal mutuoAffitto) {
-        BigDecimal totaleNettoProprietaria;
-        totaleNettoProprietaria = totaleLordoPernottamenti.subtract(totaleCostoPiattaforma)
-                                                          .subtract(totaleCostoTassa)
-                                                          .subtract(totaleLordoGestione)
-                                                          .subtract(totaleCostoPulizie)
-                                                          .subtract(costoUtenzeMensili)
-                                                          .subtract(mutuoAffitto);
-        return totaleNettoProprietaria;
+    private BigDecimal calcolaTotaleCommissioneCoHost(BigDecimal percentuale, BigDecimal lordo, BigDecimal piattaforma) {
+        return lordo.subtract(piattaforma)
+                .multiply(percentuale)
+                .divide(BigDecimal.valueOf(100));
     }
 
-    private BigDecimal calcoloTotaleCommisioneHost(BigDecimal commissioneHost, BigDecimal totaleLordoPernottamenti, BigDecimal totaleCostoPiattaforma) {
-        BigDecimal totaleCommisioneHost;
-        totaleCommisioneHost = ((totaleLordoPernottamenti.subtract(totaleCostoPiattaforma))
-                                                       .multiply((commissioneHost))
-                                                       .divide(BigDecimal.valueOf(100)));
-        return totaleCommisioneHost;
-    }
-
-    private BigDecimal calcoloTotaleCommisioneCoHost(BigDecimal commissioneCoHost, BigDecimal totaleLordoPernottamenti, BigDecimal totaleCostoPiattaforma) {
-        BigDecimal totaleCommisioneCoHost;
-        totaleCommisioneCoHost = ((totaleLordoPernottamenti.subtract(totaleCostoPiattaforma))
-                                                           .multiply((commissioneCoHost))
-                                                           .divide(BigDecimal.valueOf(100)));
-        return totaleCommisioneCoHost;
-    }
+    // ---------------------------------------------------------
+    // VALIDAZIONE DTO
+    // ---------------------------------------------------------
 
     private void validateDto(PrevisioneGuadagnoDto dto) {
-        if (dto == null) {
-            throw new PrevisioneGuadagnoException(1001,"Il body della richiesta è nullo");
-        }
+        if (dto == null)
+            throw new PrevisioneGuadagnoException(ErrorCode.VALIDATION_ERROR, "Il body della richiesta è nullo");
 
-        if (dto.getPrezzoMedioPerNotte() == null || dto.getPrezzoMedioPerNotte().compareTo(BigDecimal.ZERO) < 0) {
-            throw new PrevisioneGuadagnoException(1001,"Prezzo medio per notte non valido");
-        }
+        if (dto.getPrezzoMedioPerNotte() == null || dto.getPrezzoMedioPerNotte().compareTo(BigDecimal.ZERO) < 0)
+            throw new PrevisioneGuadagnoException(ErrorCode.VALIDATION_ERROR, "Prezzo medio per notte non valido");
 
-        if (dto.getNumeroNottiMensili() <= 0) {
-            throw new PrevisioneGuadagnoException(1001,"Numero notti mensili deve essere maggiore di 0");
-        }
+        if (dto.getNumeroNottiMensili() <= 0)
+            throw new PrevisioneGuadagnoException(ErrorCode.VALIDATION_ERROR, "Numero notti mensili deve essere maggiore di 0");
 
-        if (dto.getNumeroPrenotazioni() < 0) {
-            throw new PrevisioneGuadagnoException(1001,"Numero prenotazioni non può essere negativo");
-        }
+        if (dto.getNumeroPrenotazioni() < 0)
+            throw new PrevisioneGuadagnoException(ErrorCode.VALIDATION_ERROR, "Numero prenotazioni non può essere negativo");
 
-        if (dto.getCostoPulizia() == null || dto.getCostoPulizia().compareTo(BigDecimal.ZERO) < 0) {
-            throw new PrevisioneGuadagnoException(1001,"Costo pulizia non valido");
-        }
+        if (dto.getCostoPulizia() == null || dto.getCostoPulizia().compareTo(BigDecimal.ZERO) < 0)
+            throw new PrevisioneGuadagnoException(ErrorCode.VALIDATION_ERROR, "Costo pulizia non valido");
 
-        if (dto.getCommissioneHost() != null && dto.getCommissioneHost().compareTo(BigDecimal.valueOf(100)) > 0) {
-            throw new PrevisioneGuadagnoException(1001,"Commissione host non può superare il 100%");
-        }
+        if (dto.getCommissioneHost() != null && dto.getCommissioneHost().compareTo(BigDecimal.valueOf(100)) > 0)
+            throw new PrevisioneGuadagnoException(ErrorCode.VALIDATION_ERROR, "Commissione host non può superare il 100%");
     }
-
-
 }

@@ -17,4 +17,6 @@ public interface UserService {
     User createHost(UserDto dto, String tenantKey);
 
     User createCohost(UserDto dto, String tenantKey);
+
+     void validateResetPasswordToken(String token);
 }

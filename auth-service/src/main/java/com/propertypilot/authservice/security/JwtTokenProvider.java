@@ -30,7 +30,7 @@ public class JwtTokenProvider {
                 .claim("firstAccessStep", user.getFirstAccessStep().getId())
                 .claim("firstAccessCompleted", user.getFirstAccessCompleted())
                 .setIssuedAt(new Date())
-                .setExpiration(Date.from(Instant.now().plus(1, ChronoUnit.DAYS)))
+                .setExpiration(Date.from(Instant.now().plus(1, ChronoUnit.HOURS)))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }

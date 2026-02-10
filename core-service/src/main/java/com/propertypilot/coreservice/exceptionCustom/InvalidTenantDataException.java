@@ -1,5 +1,12 @@
 package com.propertypilot.coreservice.exceptionCustom;
 
-public class InvalidTenantDataException extends RuntimeException {
-    public InvalidTenantDataException(String msg) { super(msg); }
+public class InvalidTenantDataException extends BaseServiceException {
+
+    public InvalidTenantDataException(String message) {
+        super(ErrorCode.INVALID_TENANT_DATA, message);
+    }
+
+    public InvalidTenantDataException() {
+        super(ErrorCode.INVALID_TENANT_DATA);
+    }
 }

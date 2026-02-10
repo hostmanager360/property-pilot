@@ -1,16 +1,19 @@
 package com.propertypilot.coreservice.exceptionCustom;
 
-public class PrevisioneGuadagnoException extends RuntimeException {
+import lombok.Getter;
 
-    private final int code;
+@Getter
+public class PrevisioneGuadagnoException extends BaseServiceException {
+
+    public PrevisioneGuadagnoException(ErrorCode errorCode, String message) {
+        super(errorCode, message);
+    }
+
+    public PrevisioneGuadagnoException(ErrorCode errorCode) {
+        super(errorCode);
+    }
 
     public PrevisioneGuadagnoException(int code, String message) {
-        super(message);
-        this.code = code;
-    }
-
-    public int getCode() {
-        return code;
+        super(code, message);
     }
 }
-

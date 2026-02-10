@@ -4,77 +4,65 @@ import com.propertypilot.coreservice.dto.CreateTenantDTO;
 import com.propertypilot.coreservice.dto.FirstAccessStatusResponse;
 import com.propertypilot.coreservice.dto.ResponseHandler;
 import com.propertypilot.coreservice.dto.UserDetailDto;
-import com.propertypilot.coreservice.exceptionCustom.InvalidTenantDataException;
-import com.propertypilot.coreservice.exceptionCustom.StatusTenantNotFoundException;
-import com.propertypilot.coreservice.exceptionCustom.TenantAlreadyExistsException;
-import com.propertypilot.coreservice.exceptionCustom.TipoLicenzaNotFoundException;
 import com.propertypilot.coreservice.service.FirstAccessService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/core/private/first-access")
 @RequiredArgsConstructor
+@Slf4j
 public class FirstAccessController {
 
     private final FirstAccessService firstAccessService;
 
     @GetMapping("/status")
     public ResponseEntity<ResponseHandler<FirstAccessStatusResponse>> getStatus() {
+
+        log.info("Richiesta stato primo accesso");
+
+        FirstAccessStatusResponse status = firstAccessService.getStatus();
+
         return ResponseEntity.ok(
-                ResponseHandler.success(firstAccessService.getStatus(), "Stato primo accesso recuperato")
+                ResponseHandler.success(status, "Stato primo accesso recuperato")
         );
     }
 
     @PostMapping("/create-tenant")
     public ResponseEntity<ResponseHandler<Void>> createTenant(@RequestBody CreateTenantDTO dto) {
 
-        try {
-            firstAccessService.createTenant(dto);
-            return ResponseEntity.ok(ResponseHandler.success(null, "Tenant creato correttamente"));
+        log.info("Richiesta creazione tenant: {}", dto.getNome());
 
-        } catch (TenantAlreadyExistsException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(ResponseHandler.error(3001, e.getMessage()));
+        firstAccessService.createTenant(dto);
 
-        } catch (TipoLicenzaNotFoundException e) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(ResponseHandler.error(3002, e.getMessage()));
-
-        } catch (StatusTenantNotFoundException e) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(ResponseHandler.error(3003, e.getMessage()));
-
-        } catch (InvalidTenantDataException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(ResponseHandler.error(3004, e.getMessage()));
-
-        } catch (Exception e) {
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ResponseHandler.error(9999, "Errore interno durante la creazione del tenant"));
-        }
-
+        return ResponseEntity.ok(
+                ResponseHandler.success(null, "Tenant creato correttamente")
+        );
     }
 
     @PostMapping("/user-detail")
     public ResponseEntity<ResponseHandler<Void>> completeUserDetail(@RequestBody UserDetailDto dto) {
+
+        log.info("Completamento dettagli utente");
+
         firstAccessService.completeUserDetail(dto);
-        return ResponseEntity.ok(ResponseHandler.success(null, "Dettagli utente completati"));
+
+        return ResponseEntity.ok(
+                ResponseHandler.success(null, "Dettagli utente completati")
+        );
     }
 
     @PostMapping("/complete")
     public ResponseEntity<ResponseHandler<Void>> completeFirstAccess() {
+
+        log.info("Completamento primo accesso");
+
         firstAccessService.completeFirstAccess();
-        return ResponseEntity.ok(ResponseHandler.success(null, "Primo accesso completato"));
+
+        return ResponseEntity.ok(
+                ResponseHandler.success(null, "Primo accesso completato")
+        );
     }
 }
-
-
