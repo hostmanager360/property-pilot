@@ -50,7 +50,7 @@ public class MappingEntity {
         entity.setTotaleLordoPernottamenti(safeBigDecimal(dto.getTotaleLordoPernottamenti()));
         entity.setTotaleLordoGestione(safeBigDecimal(dto.getTotaleLordoGestione())); // attenzione mapping corretto
         entity.setTotaleCostoPulizia(safeBigDecimal(dto.getTotaleCostoPulizie()));
-        entity.setTotaleNettoProprietario(safeBigDecimal(dto.getTotaleNettoProprietaria()));
+        entity.setTotaleNettoProprietario(safeBigDecimal(dto.getTotaleNettoProprietario()));
         entity.setTotaleLordoGestione(safeBigDecimal(dto.getTotaleLordoGestione()));
         entity.setTotaleCommissioneCoHost(safeBigDecimal(dto.getTotaleCommissioneCoHost()));
         entity.setTotaleCommissioneHost(safeBigDecimal(dto.getTotaleCommissioneHost()));
@@ -59,7 +59,38 @@ public class MappingEntity {
 
         return entity;
     }
+    public static PrevisioneGuadagnoDto toDto(PrevisioneGuadagno e) {
+        PrevisioneGuadagnoDto dto = new PrevisioneGuadagnoDto();
+        dto.setNomeAppartamento(e.getNomeAppartamento());
+        dto.setIndirizzo(e.getIndirizzo());
+        dto.setNumeroLocali(e.getNumeroLocali());
+        dto.setNumeroBagni(e.getNumeroBagni());
+        dto.setMutuoAffitto(e.getMutuoAffitto());
+        dto.setTipoGestione(e.getTipoGestione());
+        dto.setCostoUtenzeMensili(e.getCostoUtenzeMensili());
+        dto.setCostoPulizia(e.getCostoPulizia());
+        dto.setNumeroPrenotazioni(e.getNumeroPrenotazioni());
+        dto.setNumeroNottiMensili(e.getNottiMensili());
+        dto.setPrezzoMedioPerNotte(e.getPrezzoMedioPerNotte());
 
+        dto.setCostoTasse(e.getCostoTasse().intValue());
+        dto.setCostoPiattaforma(e.getCostoPiattaforma().intValue());
+        dto.setAppartamentoDiretto(e.isAppartamentoDiretto());
+        dto.setCommissioneGestioneTotale(e.getCommissioneGestioneTotale().intValue());
+        dto.setCommissioneCoHost(e.getCommissioneCoHost());
+        dto.setCommissioneHost(e.getCommissioneHost());
+
+        dto.setTotaleCostoTassa(e.getTotaleCostoTassa());
+        dto.setTotaleCostoPiattaforma(e.getTotaleCostoPiattaforma());
+        dto.setTotaleLordoPernottamenti(e.getTotaleLordoPernottamenti());
+        dto.setTotaleLordoGestione(e.getTotaleLordoGestione());
+        dto.setTotaleCostoPulizie(e.getTotaleCostoPulizia());
+        dto.setTotaleNettoProprietario(e.getTotaleNettoProprietario());
+        dto.setTotaleCommissioneHost(e.getTotaleCommissioneHost());
+        dto.setTotaleCommissioneCoHost(e.getTotaleCommissioneCoHost());
+
+        return dto;
+    }
     // Helper per evitare null pointer
     private static BigDecimal safeBigDecimal(BigDecimal value) {
         return value != null ? value : BigDecimal.ZERO;

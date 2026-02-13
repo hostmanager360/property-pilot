@@ -11,6 +11,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import static com.propertypilot.coreservice.exceptionCustom.ErrorCode.*;
+
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
@@ -34,8 +36,8 @@ public class GlobalExceptionHandler {
         log.warn("JSON non valido", ex);
         return ResponseEntity.badRequest()
                 .body(ResponseHandler.error(
-                        ErrorCode.INVALID_JSON.getCode(),
-                        ErrorCode.INVALID_JSON.getDefaultMessage()
+                        INVALID_JSON.getCode(),
+                        INVALID_JSON.getDefaultMessage()
                 ));
     }
 
@@ -132,8 +134,8 @@ public class GlobalExceptionHandler {
         log.warn("Autenticazione richiesta: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ResponseHandler.error(
-                        ErrorCode.AUTH_REQUIRED.getCode(),
-                        ErrorCode.AUTH_REQUIRED.getDefaultMessage()
+                        AUTH_REQUIRED.getCode(),
+                        AUTH_REQUIRED.getDefaultMessage()
                 ));
     }
 
@@ -149,5 +151,23 @@ public class GlobalExceptionHandler {
                         ErrorCode.GENERIC_ERROR.getCode(),
                         ErrorCode.GENERIC_ERROR.getDefaultMessage()
                 ));
+    }
+
+    @ExceptionHandler(PrevisioneGuadagnoException.class)
+    public ResponseEntity<ResponseHandler<?>> handlePrevisione(PrevisioneGuadagnoException ex) {
+        log.warn("PrevisioneGuadagnoException code={} msg={}", ex.getErrorCode().getCode(), ex.getMessage());
+
+        HttpStatus status = switch (ex.getErrorCode()) {
+            case PREVISIONE_NOT_FOUND -> HttpStatus.NOT_FOUND;
+            case VALIDATION_ERROR, INVALID_JSON -> HttpStatus.BAD_REQUEST;
+            case AUTH_REQUIRED -> HttpStatus.UNAUTHORIZED;
+            case ACCESS_DENIED -> HttpStatus.FORBIDDEN;
+            default -> HttpStatus.INTERNAL_SERVER_ERROR;
+        };
+
+        return ResponseEntity.status(status).body(ResponseHandler.error(
+                ex.getErrorCode().getCode(),
+                ex.getMessage()
+        ));
     }
 }

@@ -1,6 +1,9 @@
 package com.propertypilot.coreservice.service;
 
+import com.propertypilot.coreservice.dto.PrevisioneGuadagnoDto;
+import com.propertypilot.coreservice.dto.PrevisioneGuadagnoListDto;
 import com.propertypilot.coreservice.model.Prenotazione;
+import com.propertypilot.coreservice.model.PrevisioneGuadagno;
 import com.propertypilot.coreservice.model.Tenant;
 
 import java.util.List;

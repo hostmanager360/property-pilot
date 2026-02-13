@@ -1,5 +1,6 @@
 package com.propertypilot.coreservice.service;
 
+import com.propertypilot.coreservice.dto.PrevisioneGuadagnoListDto;
 import com.propertypilot.coreservice.exceptionCustom.PrenotazioneException;
 import com.propertypilot.coreservice.model.Prenotazione;
 import com.propertypilot.coreservice.model.Tenant;

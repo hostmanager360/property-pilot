@@ -40,7 +40,7 @@ public class PrevisioneGuadagnoDto {
     private BigDecimal totaleLordoPernottamenti = BigDecimal.ZERO;
     private BigDecimal totaleLordoGestione = BigDecimal.ZERO;
     private BigDecimal totaleCostoPulizie = BigDecimal.ZERO;
-    private BigDecimal totaleNettoProprietaria = BigDecimal.ZERO;
+    private BigDecimal totaleNettoProprietario = BigDecimal.ZERO;
     private BigDecimal totaleCommissioneHost = BigDecimal.ZERO;
     private BigDecimal totaleCommissioneCoHost = BigDecimal.ZERO;
 }

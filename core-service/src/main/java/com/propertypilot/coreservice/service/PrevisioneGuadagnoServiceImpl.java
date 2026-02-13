@@ -1,25 +1,33 @@
 package com.propertypilot.coreservice.service;
 
+import com.propertypilot.coreservice.config.CurrentUserProvider;
 import com.propertypilot.coreservice.dto.PrevisioneGuadagnoDto;
+import com.propertypilot.coreservice.dto.PrevisioneGuadagnoListDto;
 import com.propertypilot.coreservice.exceptionCustom.ErrorCode;
 import com.propertypilot.coreservice.exceptionCustom.PrevisioneGuadagnoException;
 import com.propertypilot.coreservice.model.PrevisioneGuadagno;
+import com.propertypilot.coreservice.model.User;
 import com.propertypilot.coreservice.repository.PrevisioneGadagnoRepository;
 import com.propertypilot.coreservice.util.MappingEntity;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class PrevisioneGuadagnoServiceImpl implements PrevisioneGadagnoService {
 
-    private final PrevisioneGadagnoRepository pgRepository;
+    @Autowired
+    PrevisioneGadagnoRepository pgRepository;
+    @Autowired
+    CurrentUserProvider currentUserProvider;
 
     @Transactional
     @Override
@@ -54,15 +62,16 @@ public class PrevisioneGuadagnoServiceImpl implements PrevisioneGadagnoService {
                     dto.getCostoUtenzeMensili(),
                     dto.getMutuoAffitto()
             );
-            dto.setTotaleNettoProprietaria(totaleNettoProprietaria);
+            dto.setTotaleNettoProprietario(totaleNettoProprietaria);
 
             BigDecimal totaleCommissioneHost = calcolaTotaleCommissioneHost(dto.getCommissioneHost(), totaleLordoPernottamenti, totaleCostoPiattaforma);
             dto.setTotaleCommissioneHost(totaleCommissioneHost);
 
             BigDecimal totaleCommissioneCoHost = calcolaTotaleCommissioneCoHost(dto.getCommissioneCoHost(), totaleLordoPernottamenti, totaleCostoPiattaforma);
             dto.setTotaleCommissioneCoHost(totaleCommissioneCoHost);
-
+            User userCreated = currentUserProvider.getCurrentUserOrThrow();
             PrevisioneGuadagno entity = MappingEntity.toEntity(dto);
+            entity.setUser(userCreated);;
             entity = pgRepository.save(entity);
 
             log.info("Previsione guadagno salvata con ID {}", entity.getId());
@@ -168,5 +177,43 @@ public class PrevisioneGuadagnoServiceImpl implements PrevisioneGadagnoService {
 
         if (dto.getCommissioneHost() != null && dto.getCommissioneHost().compareTo(BigDecimal.valueOf(100)) > 0)
             throw new PrevisioneGuadagnoException(ErrorCode.VALIDATION_ERROR, "Commissione host non può superare il 100%");
+    }
+    @Override
+    public List<PrevisioneGuadagnoListDto> getAllPrevisioni() {
+        User user = currentUserProvider.getCurrentUserOrThrow();
+        log.info("Get lista previsioni - userId={}", user.getId());
+
+        return pgRepository.findAllByUserOrderByIdDesc(user)
+                .stream()
+                .map(PrevisioneGuadagnoListDto::fromEntity)
+                .toList();
+    }
+
+    @Override
+    public PrevisioneGuadagnoDto getDettaglioById(Long previsioneId) {
+        User user = currentUserProvider.getCurrentUserOrThrow();
+        log.info("Get dettaglio previsione - id={} userId={}", previsioneId, user.getId());
+
+        PrevisioneGuadagno entity = pgRepository.findByIdAndUser(previsioneId, user)
+                .orElseThrow(() -> {
+                    log.warn("Previsione non trovata o non accessibile - id={} userId={}", previsioneId, user.getId());
+                    return new PrevisioneGuadagnoException(ErrorCode.PREVISIONE_NOT_FOUND, "Previsione non trovata");
+                });
+
+        return MappingEntity.toDto(entity);
+    }
+    @Override
+    public void deleteById(Long previsioneId) {
+        User user = currentUserProvider.getCurrentUserOrThrow();
+
+        PrevisioneGuadagno entity = pgRepository.findByIdAndUser(previsioneId, user)
+                .orElseThrow(() -> new PrevisioneGuadagnoException(
+                        ErrorCode.PREVISIONE_NOT_FOUND,
+                        "Previsione non trovata o non accessibile"
+                ));
+
+        pgRepository.delete(entity);
+
+        log.info("Previsione eliminata id={} userId={}", previsioneId, user.getId());
     }
 }

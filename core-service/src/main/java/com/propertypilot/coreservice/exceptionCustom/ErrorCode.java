@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ErrorCode {
 
+    PREVISIONE_NOT_FOUND(4101, "Previsione non trovata"),
+    PREVISIONE_FORBIDDEN(4102, "Accesso non consentito alla previsione"),
     // ---------------------------------------------------------
     // 1000 — VALIDAZIONE
     // ---------------------------------------------------------
