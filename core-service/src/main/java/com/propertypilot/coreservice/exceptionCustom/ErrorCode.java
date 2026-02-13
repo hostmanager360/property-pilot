@@ -15,7 +15,8 @@ public enum ErrorCode {
     VALIDATION_ERROR(1001, "Errore di validazione"),
     INVALID_JSON(1002, "JSON non valido"),
     INVALID_TENANT_DATA(1003, "Dati tenant non validi"),
-
+    PREVISIONE_PDF_EMPTY(4103, "PDF generato vuoto"),
+    PREVISIONE_PDF_ERROR(4104, "Errore generazione PDF"),
     // ---------------------------------------------------------
     // 2000 — TENANT
     // ---------------------------------------------------------

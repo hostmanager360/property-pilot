@@ -139,9 +139,23 @@ public class GlobalExceptionHandler {
                 ));
     }
 
-    // ---------------------------------------------------------
-    // 9999 — GENERICO
-    // ---------------------------------------------------------
+    @ExceptionHandler(PrevisioneGuadagnoException.class)
+    public ResponseEntity<ResponseHandler<?>> handlePrevisione(PrevisioneGuadagnoException ex) {
+        log.warn("PrevisioneGuadagnoException code={} msg={}", ex.getErrorCode().getCode(), ex.getMessage());
+
+        HttpStatus status = switch (ex.getErrorCode()) {
+            case PREVISIONE_NOT_FOUND -> HttpStatus.NOT_FOUND;
+            case PREVISIONE_FORBIDDEN, ACCESS_DENIED -> HttpStatus.FORBIDDEN;
+            case AUTH_REQUIRED -> HttpStatus.UNAUTHORIZED;
+            case VALIDATION_ERROR, INVALID_JSON -> HttpStatus.BAD_REQUEST;
+            default -> HttpStatus.INTERNAL_SERVER_ERROR;
+        };
+
+        return ResponseEntity.status(status).body(ResponseHandler.error(
+                ex.getErrorCode().getCode(),
+                ex.getMessage()
+        ));
+    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ResponseHandler<?>> handleGeneric(Exception ex) {
@@ -151,23 +165,5 @@ public class GlobalExceptionHandler {
                         ErrorCode.GENERIC_ERROR.getCode(),
                         ErrorCode.GENERIC_ERROR.getDefaultMessage()
                 ));
-    }
-
-    @ExceptionHandler(PrevisioneGuadagnoException.class)
-    public ResponseEntity<ResponseHandler<?>> handlePrevisione(PrevisioneGuadagnoException ex) {
-        log.warn("PrevisioneGuadagnoException code={} msg={}", ex.getErrorCode().getCode(), ex.getMessage());
-
-        HttpStatus status = switch (ex.getErrorCode()) {
-            case PREVISIONE_NOT_FOUND -> HttpStatus.NOT_FOUND;
-            case VALIDATION_ERROR, INVALID_JSON -> HttpStatus.BAD_REQUEST;
-            case AUTH_REQUIRED -> HttpStatus.UNAUTHORIZED;
-            case ACCESS_DENIED -> HttpStatus.FORBIDDEN;
-            default -> HttpStatus.INTERNAL_SERVER_ERROR;
-        };
-
-        return ResponseEntity.status(status).body(ResponseHandler.error(
-                ex.getErrorCode().getCode(),
-                ex.getMessage()
-        ));
     }
 }
