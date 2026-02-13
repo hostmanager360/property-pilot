@@ -148,6 +148,8 @@ public class GlobalExceptionHandler {
             case PREVISIONE_FORBIDDEN, ACCESS_DENIED -> HttpStatus.FORBIDDEN;
             case AUTH_REQUIRED -> HttpStatus.UNAUTHORIZED;
             case VALIDATION_ERROR, INVALID_JSON -> HttpStatus.BAD_REQUEST;
+            case PREVISIONE_EMAIL_INVALID -> HttpStatus.BAD_REQUEST;
+            case PREVISIONE_EMAIL_SEND_FAILED -> HttpStatus.INTERNAL_SERVER_ERROR;
             default -> HttpStatus.INTERNAL_SERVER_ERROR;
         };
 

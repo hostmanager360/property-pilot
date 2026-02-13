@@ -32,6 +32,8 @@ public enum ErrorCode {
     // ---------------------------------------------------------
     ACCESS_DENIED(3001, "Accesso negato"),
     AUTH_REQUIRED(3002, "Autenticazione richiesta"),
+    PREVISIONE_EMAIL_INVALID(4103, "Email destinatario non valida"),
+    PREVISIONE_EMAIL_SEND_FAILED(4104, "Invio email non riuscito"),
 
     // ---------------------------------------------------------
     // 9999 — GENERICO
