@@ -32,4 +32,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ResponseHandler.error(1999, "Errore interno"));
     }
+    @ExceptionHandler(AccountNotVerifiedException.class)
+    public ResponseEntity<?> notActivateAccount(AccountNotVerifiedException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ResponseHandler.error(1002, ex.getMessage()));
+    }
 }

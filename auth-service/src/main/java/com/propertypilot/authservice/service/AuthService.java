@@ -40,7 +40,10 @@ public class AuthService {
                     return new UserNotFoundException(request.getEmail());
                 });
 
-
+        if (!(user.isEnabled())) {
+            log.warn("Login bloccato: account non attivato {}", user.getEmail());
+            throw new AccountNotVerifiedException();
+        }
         // 2. Verifica password
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             log.warn("Login fallito: password errata per {}", request.getEmail());
